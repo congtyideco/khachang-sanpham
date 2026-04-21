@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phân Tích Dữ Liệu Khách Hàng</title>
+
+<!-- SheetJS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<!-- Firebase SDK v8 (global firebase object, không cần import) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --bg: #f1f5f9;
+  --surf: #ffffff;
+  --surf2: #f8fafc;
+  --bdr: #e2e8f0;
+  --bdr2: #cbd5e1;
+  --ac: #0284c7;
+  --ac-lt: #e0f2fe;
+  --ac2: #6366f1;
+  --ac2-lt: #eef2ff;
+  --gn: #059669;
+  --gn-lt: #d1fae5;
+  --am: #d97706;
+  --am-lt: #fef3c7;
+  --rd: #dc2626;
+  --rd-lt: #fee2e2;
+  --tx: #0f172a;
+  --tx2: #475569;
+  --mu: #94a3b8;
+  --r: 10px;
+  --sh: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+  --sh2: 0 2px 8px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.06);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Be Vietnam Pro', sans-serif; background: var(--bg); color: var(--tx); min-height: 100vh; }
+.wrap { max-width: 1440px; margin: 0 auto; padding: 28px 18px; }
+
+/* ─ Header ─ */
+.hdr { text-align: center; margin-bottom: 28px; }
+.hdr-badge { display: inline-flex; align-items: center; gap: 7px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2.5px; color: var(--ac); text-transform: uppercase; background: var(--ac-lt); border: 1px solid rgba(2,132,199,.2); padding: 5px 13px; border-radius: 99px; margin-bottom: 12px; }
+h1 { font-size: clamp(20px, 3vw, 30px); font-weight: 700; color: var(--tx); margin-bottom: 6px; }
+.hdr-sub { font-size: 13px; color: var(--tx2); }
+
+/* ─ Firebase status bar ─ */
+.fb-bar { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+.fb-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-family: 'JetBrains Mono', monospace; padding: 4px 12px; border-radius: 99px; border: 1px solid; }
+.fb-pill.ok { background: var(--gn-lt); border-color: rgba(5,150,105,.25); color: var(--gn); }
+.fb-pill.err { background: var(--rd-lt); border-color: rgba(220,38,38,.25); color: var(--rd); }
+.fb-pill.warn { background: var(--am-lt); border-color: rgba(217,119,6,.25); color: var(--am); }
+.fb-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.fb-dot.pulse { animation: dotPulse 1.8s ease infinite; }
+@keyframes dotPulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.ls-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-family: 'JetBrains Mono', monospace; padding: 4px 12px; border-radius: 99px; border: 1px solid rgba(217,119,6,.25); background: var(--am-lt); color: var(--am); }
+
+/* ─ Upload area ─ */
+.up-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+@media(max-width:640px){ .up-row { grid-template-columns: 1fr; } }
+.uc { background: var(--surf); border: 1px solid var(--bdr); border-radius: var(--r); padding: 18px; box-shadow: var(--sh); transition: border-color .3s; }
+.uc.ok { border-color: var(--gn); }
+.uc-tag { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; letter-spacing: 2px; color: var(--mu); text-transform: uppercase; margin-bottom: 5px; }
+.uc-title { font-size: 14px; font-weight: 600; color: var(--tx); margin-bottom: 12px; }
+.dz { border: 2px dashed var(--bdr2); border-radius: 8px; padding: 16px 12px; text-align: center; cursor: pointer; transition: all .2s; background: var(--surf2); position: relative; }
+.dz:hover, .dz.ov { border-color: var(--ac); background: var(--ac-lt); }
+.dz input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.dz-ico { font-size: 20px; margin-bottom: 5px; }
+.dz-txt { font-size: 12.5px; color: var(--tx2); pointer-events: none; }
+.dz-txt strong { display: block; color: var(--ac); font-size: 12px; margin-bottom: 2px; }
+.fok { display: none; margin-top: 8px; padding: 7px 10px; background: var(--gn-lt); border: 1px solid rgba(5,150,105,.2); border-radius: 6px; font-size: 11.5px; color: var(--gn); align-items: center; gap: 5px; }
+.fok.on { display: flex; }
+
+/* ─ Controls ─ */
+.ctrl { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; padding: 14px 18px; background: var(--surf); border: 1px solid var(--bdr); border-radius: var(--r); box-shadow: var(--sh); }
+.btn { border: none; border-radius: 7px; padding: 9px 18px; font-family: 'Be Vietnam Pro', sans-serif; font-size: 13.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all .18s; white-space: nowrap; }
+.btn:active { transform: scale(.97); }
+.btn-run { background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; box-shadow: 0 2px 8px rgba(2,132,199,.3); }
+.btn-run:hover:not(:disabled) { box-shadow: 0 4px 14px rgba(2,132,199,.4); transform: translateY(-1px); }
+.btn-run:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-save { background: linear-gradient(135deg, #059669, #047857); color: #fff; box-shadow: 0 2px 8px rgba(5,150,105,.3); }
+.btn-save:hover { box-shadow: 0 4px 14px rgba(5,150,105,.4); transform: translateY(-1px); }
+.btn-load { background: var(--surf); color: var(--ac); border: 1px solid rgba(2,132,199,.3); }
+.btn-load:hover { background: var(--ac-lt); }
+.btn-export { background: var(--surf); color: var(--ac2); border: 1px solid rgba(99,102,241,.3); }
+.btn-export:hover { background: var(--ac2-lt); }
+.btn-export.hidden { display: none; }
+.sim-ctrl { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--tx2); }
+.sim-ctrl input[type=range] { width: 80px; accent-color: var(--ac); }
+#simV { font-family: 'JetBrains Mono', monospace; color: var(--ac); font-weight: 700; min-width: 34px; }
+.divider { width: 1px; height: 28px; background: var(--bdr); }
+
+/* ─ Stats ─ */
+.stats { display: none; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 18px; }
+.stats.on { display: grid; }
+@media(max-width:640px){ .stats { grid-template-columns: repeat(2,1fr); } }
+.sc { background: var(--surf); border: 1px solid var(--bdr); border-radius: var(--r); padding: 14px 16px; text-align: center; box-shadow: var(--sh); }
+.sc-n { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700; color: var(--ac); line-height: 1; margin-bottom: 4px; }
+.sc-l { font-size: 10.5px; color: var(--mu); text-transform: uppercase; letter-spacing: 1px; }
+
+/* ─ Search ─ */
+.sw { display: none; margin-bottom: 14px; position: relative; }
+.sw.on { display: block; }
+.sw svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--mu); pointer-events: none; }
+.sw input { width: 100%; background: var(--surf); border: 1px solid var(--bdr); border-radius: 8px; padding: 10px 14px 10px 38px; font-family: 'Be Vietnam Pro', sans-serif; font-size: 13.5px; color: var(--tx); outline: none; box-shadow: var(--sh); transition: border-color .2s; }
+.sw input:focus { border-color: var(--ac); box-shadow: 0 0 0 3px rgba(2,132,199,.1); }
+.sw input::placeholder { color: var(--mu); }
+
+/* ─ Loading ─ */
+.loading { display: none; text-align: center; padding: 56px 20px; }
+.loading.on { display: block; }
+.spin { width: 32px; height: 32px; border: 3px solid var(--bdr); border-top-color: var(--ac); border-radius: 50%; animation: spin .65s linear infinite; margin: 0 auto 12px; }
+.loading p { color: var(--tx2); font-size: 14px; }
+
+/* ─ Table ─ */
+.tbox { display: none; background: var(--surf); border: 1px solid var(--bdr); border-radius: var(--r); overflow: hidden; box-shadow: var(--sh2); }
+.tbox.on { display: block; }
+.tbox-hdr { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid var(--bdr); background: var(--surf2); flex-wrap: wrap; gap: 8px; }
+.tbox-title { font-size: 14px; font-weight: 700; color: var(--tx); display: flex; align-items: center; gap: 8px; }
+.badge { font-family: 'JetBrains Mono', monospace; font-size: 11px; background: var(--ac-lt); border: 1px solid rgba(2,132,199,.2); color: var(--ac); padding: 3px 9px; border-radius: 99px; font-weight: 700; }
+.tbox-hint { font-size: 11.5px; color: var(--mu); }
+.tscroll { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; }
+thead th { background: var(--surf2); padding: 10px 14px; text-align: left; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: var(--mu); text-transform: uppercase; font-family: 'JetBrains Mono', monospace; border-bottom: 2px solid var(--bdr); white-space: nowrap; }
+th.c1 { width: 48px; }
+th.c2 { min-width: 200px; max-width: 260px; }
+th.c3 { width: 175px; }
+th.c4 { min-width: 320px; }
+th.c5 { width: 64px; text-align: center; }
+
+tbody tr { border-bottom: 1px solid var(--bdr); transition: background .12s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: rgba(2,132,199,.025); }
+td { padding: 11px 14px; font-size: 13px; vertical-align: top; }
+
+.td-num { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--mu); padding-top: 14px; }
+.td-name { font-weight: 600; color: var(--tx); line-height: 1.45; font-size: 13px; }
+
+/* Editable phone */
+.ph-wrap { display: flex; align-items: center; }
+.ph-inp { width: 100%; border: 1px solid transparent; border-radius: 6px; padding: 5px 9px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; background: transparent; color: var(--tx); outline: none; transition: all .18s; }
+.ph-inp:hover { border-color: var(--bdr2); background: var(--surf2); }
+.ph-inp:focus { border-color: var(--ac); background: #fff; box-shadow: 0 0 0 3px rgba(2,132,199,.1); }
+.ph-inp.has { color: var(--gn); }
+.ph-inp.none { color: var(--mu); }
+.ph-inp::placeholder { color: var(--mu); font-size: 11px; font-weight: 400; }
+
+/* Product tags + add */
+.tags-wrap { display: flex; flex-direction: column; gap: 5px; }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; min-height: 24px; }
+.tag { display: inline-block; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11.5px; padding: 3px 9px; border-radius: 5px; background: var(--ac2-lt); border: 1px solid rgba(99,102,241,.2); color: var(--ac2); cursor: default; font-family: 'JetBrains Mono', monospace; }
+.tag:hover { background: #e0e7ff; }
+.add-wrap { display: flex; gap: 5px; align-items: center; }
+.prod-inp { flex: 1; min-width: 130px; border: 1px dashed var(--bdr2); border-radius: 6px; padding: 4px 9px; font-family: 'Be Vietnam Pro', sans-serif; font-size: 12px; color: var(--tx); background: transparent; outline: none; transition: all .18s; }
+.prod-inp:focus { border-color: var(--ac); border-style: solid; background: #fff; }
+.prod-inp::placeholder { color: var(--mu); }
+.btn-add { background: var(--ac-lt); border: 1px solid rgba(2,132,199,.25); color: var(--ac); border-radius: 5px; padding: 3px 10px; font-size: 11.5px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all .15s; }
+.btn-add:hover { background: #bae6fd; }
+
+/* Delete */
+.btn-del { background: transparent; border: 1px solid rgba(220,38,38,.2); color: var(--rd); border-radius: 6px; padding: 5px 9px; font-size: 13px; cursor: pointer; transition: all .15s; display: block; margin: 0 auto; }
+.btn-del:hover { background: var(--rd-lt); border-color: var(--rd); }
+
+/* Empty */
+.empty { display: none; text-align: center; padding: 48px 20px; color: var(--mu); }
+.empty.on { display: block; }
+.empty-ico { font-size: 36px; margin-bottom: 8px; }
+.empty p { font-size: 13.5px; }
+
+/* Log */
+.log { display: none; margin-top: 14px; background: var(--surf); border: 1px solid var(--bdr); border-radius: 8px; padding: 12px 14px; max-height: 100px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; box-shadow: var(--sh); }
+.log.on { display: block; }
+.ll { line-height: 2; }
+.ll.g { color: var(--gn); }
+.ll.b { color: var(--ac); }
+.ll.y { color: var(--am); }
+.ll.r { color: var(--rd); }
+
+/* Toast */
+.toast { position: fixed; bottom: 22px; right: 22px; z-index: 999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast-item { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,.12); pointer-events: all; animation: toastIn .3s ease; max-width: 320px; }
+.toast-item.ok { background: #fff; border-left: 3px solid var(--gn); color: var(--tx); }
+.toast-item.err { background: #fff; border-left: 3px solid var(--rd); color: var(--tx); }
+.toast-item.warn { background: #fff; border-left: 3px solid var(--am); color: var(--tx); }
+@keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes rowIn { from{opacity:0;transform:translateX(-5px)} to{opacity:1;transform:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- Header -->
+<div class="hdr">
+  <div class="hdr-badge">📊 Customer Data Analyzer v2</div>
+  <h1>Phân Tích Dữ Liệu Khách Hàng</h1>
+  <p class="hdr-sub">Upload 2 file Excel · Tự động nhóm, trích xuất sản phẩm, bổ sung SĐT · Đồng bộ Firebase Realtime</p>
+  <div class="fb-bar">
+    <div class="fb-pill warn" id="fbPill"><span class="fb-dot pulse"></span><span id="fbTxt">Đang kết nối Firebase...</span></div>
+    <div class="ls-pill" id="lsPill" style="display:none">💾 <span id="lsTxt">LocalStorage sẵn sàng</span></div>
+  </div>
+</div>
+
+<!-- Upload -->
+<div class="up-row">
+  <div class="uc" id="c1">
+    <div class="uc-tag">File 01 · Xuất kho</div>
+    <div class="uc-title">📦 DULIEUKHA.xlsx</div>
+    <div class="dz" id="dz1">
+      <input type="file" id="f1" accept=".xlsx,.xls">
+      <div class="dz-ico">⬆️</div>
+      <div class="dz-txt"><strong>Nhấn hoặc kéo thả</strong>Dữ liệu xuất kho chi tiết</div>
+    </div>
+    <div class="fok" id="ok1">✅ <span id="ot1"></span></div>
+  </div>
+  <div class="uc" id="c2">
+    <div class="uc-tag">File 02 · Danh sách</div>
+    <div class="uc-title">👥 ds-khach-hang.xlsx</div>
+    <div class="dz" id="dz2">
+      <input type="file" id="f2" accept=".xlsx,.xls">
+      <div class="dz-ico">⬆️</div>
+      <div class="dz-txt"><strong>Nhấn hoặc kéo thả</strong>Danh sách quản lý khách hàng</div>
+    </div>
+    <div class="fok" id="ok2">✅ <span id="ot2"></span></div>
+  </div>
+</div>
+
+<!-- Controls -->
+<div class="ctrl">
+  <button class="btn btn-run" id="btnRun" onclick="runAnalysis()" disabled>⚡ Phân Tích Dữ Liệu</button>
+  <div class="divider"></div>
+  <button class="btn btn-save" id="btnSave" onclick="saveData()" style="display:none">💾 Lưu (Firebase + Local)</button>
+  <button class="btn btn-load" onclick="loadData()">☁️ Tải Dữ Liệu</button>
+  <button class="btn btn-export hidden" id="btnExport" onclick="doExport()">📥 Xuất Excel</button>
+  <div class="sim-ctrl">
+    <span>Ngưỡng ghép SĐT:</span>
+    <input type="range" id="sim" min="55" max="95" value="75" oninput="document.getElementById('simV').textContent=this.value+'%'">
+    <span id="simV">75%</span>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats" id="stats">
+  <div class="sc"><div class="sc-n" id="stKH">0</div><div class="sc-l">Khách Hàng</div></div>
+  <div class="sc"><div class="sc-n" id="stSP">0</div><div class="sc-l">Sản Phẩm (unique)</div></div>
+  <div class="sc"><div class="sc-n" id="stPH">0</div><div class="sc-l">Có Số ĐT</div></div>
+  <div class="sc"><div class="sc-n" id="stRC">0</div><div class="sc-l">Bản Ghi Gốc</div></div>
+</div>
+
+<!-- Search -->
+<div class="sw" id="sw">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+  <input type="text" id="srch" placeholder="Tìm kiếm tên khách hàng hoặc sản phẩm..." oninput="filterRows()">
+</div>
+
+<!-- Loading -->
+<div class="loading" id="ld"><div class="spin"></div><p id="ldTxt">Đang xử lý dữ liệu...</p></div>
+
+<!-- Table -->
+<div class="tbox" id="tbox">
+  <div class="tbox-hdr">
+    <div class="tbox-title">Kết Quả Phân Tích <span class="badge" id="cnt">0</span></div>
+    <span class="tbox-hint">✏️ Nhấp ô SĐT / thêm sản phẩm để chỉnh sửa &nbsp;·&nbsp; 🗑️ Nút đỏ để xóa hàng</span>
+  </div>
+  <div class="tscroll">
+    <table>
+      <thead>
+        <tr>
+          <th class="c1">#</th>
+          <th class="c2">Tên Khách Hàng</th>
+          <th class="c3">Số Điện Thoại</th>
+          <th class="c4">Sản Phẩm</th>
+          <th class="c5">Xóa</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <div class="empty" id="empty"><div class="empty-ico">🔍</div><p>Không tìm thấy kết quả</p></div>
+</div>
+
+<!-- Log -->
+<div class="log" id="logBox"></div>
+
+</div>
+
+<!-- Toast container -->
+<div class="toast" id="toastContainer"></div>
+
+<script>
+// ─────────────────────────────────────────────
+// LOG & HELPERS — phải khai báo trước Firebase init
+// ─────────────────────────────────────────────
+const _logs = [];
+function lg(type, msg) {
+  _logs.push({ type, msg });
+  if (_logs.length > 80) _logs.shift();
+  const b = document.getElementById('logBox');
+  if (b) {
+    b.classList.add('on');
+    b.innerHTML = _logs.map(l => `<div class="ll ${l.type}">${esc(l.msg)}</div>`).join('');
+    b.scrollTop = b.scrollHeight;
+  }
+}
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─────────────────────────────────────────────
+// FIREBASE INIT (compat SDK - window scope safe)
+// ─────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyCPb-_cScG3ZK_9Y7_Cbpe-_cQ7GqpXNV8",
+  authDomain: "qldulieukh.firebaseapp.com",
+  databaseURL: "https://qldulieukh-default-rtdb.firebaseio.com",
+  projectId: "qldulieukh",
+  storageBucket: "qldulieukh.firebasestorage.app",
+  messagingSenderId: "875989375682",
+  appId: "1:875989375682:web:436e932afc2899b5c5b95b"
+};
+
+let fbApp, fbDb;
+let fbReady = false;
+let fbConnected = false;
+
+try {
+  fbApp = firebase.initializeApp(firebaseConfig);
+  fbDb = firebase.database();
+  
+  // Check connection state
+  fbDb.ref('.info/connected').on('value', snap => {
+    fbConnected = snap.val() === true;
+    fbReady = true;
+    updateFbStatus();
+  });
+  
+  // Realtime listener for changes from other clients
+  fbDb.ref('customers').on('value', snap => {
+    // Only auto-refresh if not currently editing (table is visible and result loaded)
+    if (snap.exists() && result.length > 0) {
+      const remote = snap.val();
+      if (remote) mergeRemoteChanges(remote);
+    }
+  });
+  
+  lg('b', '✔ Firebase SDK khởi tạo thành công');
+} catch(e) {
+  lg('r', '❌ Firebase SDK lỗi: ' + e.message);
+  fbReady = false;
+}
+
+function updateFbStatus() {
+  const pill = document.getElementById('fbPill');
+  const txt = document.getElementById('fbTxt');
+  const lsPill = document.getElementById('lsPill');
+  if (fbConnected) {
+    pill.className = 'fb-pill ok';
+    pill.querySelector('.fb-dot').classList.remove('pulse');
+    txt.textContent = 'Firebase Realtime DB ✓ Đã kết nối';
+  } else {
+    pill.className = 'fb-pill err';
+    pill.querySelector('.fb-dot').classList.add('pulse');
+    txt.textContent = 'Firebase: Mất kết nối — Đang dùng LocalStorage';
+    lsPill.style.display = 'inline-flex';
+  }
+}
+
+function mergeRemoteChanges(remote) {
+  let changed = false;
+  Object.values(remote).forEach(r => {
+    const local = result.find(x => x.key === r.key);
+    if (local && (local.phone !== r.phone || JSON.stringify(local.products) !== JSON.stringify(r.products))) {
+      local.phone = r.phone || local.phone;
+      local.products = r.products || local.products;
+      changed = true;
+    }
+  });
+}
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let rawDL = null, rawDS = null, result = [];
+const LS_KEY = 'kh_data_v2';
+
+// ─────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────
+function nrm(s) {
+  return String(s == null ? '' : s)
+    .replace(/[\u00a0\t\r\n]+/g, ' ')
+    .replace(/ {2,}/g, ' ')
+    .trim();
+}
+function low(s) { return nrm(s).toLowerCase(); }
+// Safe Firebase key: no special chars
+function toKey(name) {
+  return low(name)
+    .replace(/[.#$\[\]\/\\]/g, '_')
+    .replace(/\s+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '')
+    .substring(0, 100) || 'key_' + Date.now();
+}
+
+// ─────────────────────────────────────────────
+// FILE SETUP
+// ─────────────────────────────────────────────
+function setupFile(dzId, fId, okId, otId, cId, cb) {
+  const dz = document.getElementById(dzId);
+  const fi = document.getElementById(fId);
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('ov'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('ov'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('ov');
+    if (e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0], okId, otId, cId, cb);
+  });
+  fi.addEventListener('change', () => {
+    if (fi.files[0]) readFile(fi.files[0], okId, otId, cId, cb);
+  });
+}
+
+function readFile(file, okId, otId, cId, cb) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array', raw: false });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      // Use raw:false to get formatted strings for all cell types
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false, blankrows: false });
+      cb(rows, file.name);
+      document.getElementById(okId).classList.add('on');
+      document.getElementById(otId).textContent = file.name + ' · ' + (rows.length - 1) + ' dòng';
+      document.getElementById(cId).classList.add('ok');
+      checkReady();
+    } catch(err) {
+      toast('Lỗi đọc file: ' + err.message, 'err');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function checkReady() {
+  document.getElementById('btnRun').disabled = !(rawDL && rawDS);
+}
+
+setupFile('dz1','f1','ok1','ot1','c1', (rows, n) => { rawDL = rows; lg('b','📂 DULIEUKHA: '+(rows.length-1)+' bản ghi'); });
+setupFile('dz2','f2','ok2','ot2','c2', (rows, n) => { rawDS = rows; lg('b','📂 ds-khach-hang: '+(rows.length-1)+' bản ghi'); });
+
+// ─────────────────────────────────────────────
+// HEADER DETECTION
+// ─────────────────────────────────────────────
+function findHdrRow(rows, kw) {
+  for (let i = 0; i < Math.min(8, rows.length); i++) {
+    if (rows[i].some(c => low(String(c)).includes(kw))) return i;
+  }
+  return 0;
+}
+function findCol(hrow, ...kws) {
+  for (const kw of kws) {
+    const idx = hrow.findIndex(c => low(String(c)).includes(kw));
+    if (idx >= 0) return idx;
+  }
+  return -1;
+}
+
+// ─────────────────────────────────────────────
+// PRODUCT SHORT-NAME EXTRACTION
+// Chỉ lấy tên viết Hoa đứng đầu, cắt trước " - " hoặc " ("
+// ─────────────────────────────────────────────
+function extractProductName(full) {
+  const s = nrm(full);
+  if (!s) return null;
+
+  // Phải bắt đầu bằng chữ in Hoa (A-Z hoặc chữ Hoa Việt)
+  const firstChar = s.charAt(0);
+  const isUpperLatin = firstChar >= 'A' && firstChar <= 'Z';
+  // Uppercase Vietnamese chars
+  const upperViet = 'ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠƯẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỲỴỶỸ'.toUpperCase();
+  const isUpperViet = upperViet.includes(firstChar.toUpperCase()) && firstChar === firstChar.toUpperCase() && firstChar !== firstChar.toLowerCase();
+
+  if (!isUpperLatin && !isUpperViet) return null;
+
+  let n = s;
+  // Cut before " - " (dash with spaces)
+  const i1 = n.indexOf(' - ');
+  if (i1 > 0) n = n.substring(0, i1).trim();
+  // Cut before " (" 
+  const i2 = n.indexOf(' (');
+  if (i2 > 0) n = n.substring(0, i2).trim();
+  // Cut before " –"
+  const i3 = n.indexOf(' –');
+  if (i3 > 0) n = n.substring(0, i3).trim();
+
+  return n.length >= 2 ? n : null;
+}
+
+// ─────────────────────────────────────────────
+// JARO-WINKLER SIMILARITY
+// ─────────────────────────────────────────────
+function jaroWinkler(a, b) {
+  if (a === b) return 100;
+  if (!a || !b) return 0;
+  const la = a.length, lb = b.length;
+  const md = Math.max(Math.floor(Math.max(la, lb) / 2) - 1, 0);
+  const am = new Uint8Array(la), bm = new Uint8Array(lb);
+  let m = 0, t = 0;
+  for (let i = 0; i < la; i++) {
+    const lo = Math.max(0, i - md), hi = Math.min(i + md + 1, lb);
+    for (let j = lo; j < hi; j++) {
+      if (!bm[j] && a[i] === b[j]) { am[i] = bm[j] = 1; m++; break; }
+    }
+  }
+  if (!m) return 0;
+  let k = 0;
+  for (let i = 0; i < la; i++) {
+    if (am[i]) { while (!bm[k]) k++; if (a[i] !== b[k]) t++; k++; }
+  }
+  const jaro = (m / la + m / lb + (m - t / 2) / m) / 3;
+  let p = 0;
+  for (let i = 0; i < Math.min(4, Math.min(la, lb)); i++) {
+    if (a[i] === b[i]) p++; else break;
+  }
+  return Math.round((jaro + p * 0.1 * (1 - jaro)) * 100);
+}
+
+// ─────────────────────────────────────────────
+// MAIN ANALYSIS
+// ─────────────────────────────────────────────
+const SKIP_NAMES = new Set([
+  'khách hàng','tổng','nan','total','','null','undefined',
+  'tong','khach hang','khach'
+]);
+
+function runAnalysis() {
+  if (!rawDL || !rawDS) return;
+  document.getElementById('ld').classList.add('on');
+  document.getElementById('ldTxt').textContent = 'Đang xử lý dữ liệu...';
+  ['tbox','stats','sw'].forEach(id => document.getElementById(id).classList.remove('on'));
+  document.getElementById('btnExport').classList.add('hidden');
+  document.getElementById('btnSave').style.display = 'none';
+  setTimeout(doAnalysis, 40);
+}
+
+function doAnalysis() {
+  try {
+    const threshold = parseInt(document.getElementById('sim').value);
+
+    // ── Parse DULIEUKHA ──
+    const hi = findHdrRow(rawDL, 'khách hàng');
+    const hr = rawDL[hi].map(c => nrm(String(c)));
+    let cKH = findCol(hr, 'khách hàng', 'khach hang');
+    let cSP = findCol(hr, 'sản phẩm', 'san pham', 'product');
+    if (cKH < 0) cKH = 3;
+    if (cSP < 0) cSP = 5;
+    lg('b', `✔ DULIEUKHA header dòng ${hi+1} · Cột KH=${cKH+1} Cột SP=${cSP+1}`);
+
+    // Group customers — key = normalized lowercase
+    const groups = new Map(); // key → { display, prods: Set }
+    let totalRows = 0;
+
+    for (let i = hi + 1; i < rawDL.length; i++) {
+      const row = rawDL[i];
+      if (!row || row.length === 0) continue;
+      const khRaw = nrm(String(row[cKH] || ''));
+      const spRaw = nrm(String(row[cSP] || ''));
+      const khLow = low(khRaw);
+
+      if (!khRaw || SKIP_NAMES.has(khLow)) continue;
+      // Skip rows that look like totals or headers
+      if (/^(tổng|total|grand total)/i.test(khRaw)) continue;
+
+      totalRows++;
+      if (!groups.has(khLow)) {
+        groups.set(khLow, { display: khRaw, prods: new Set() });
+      }
+      const prod = extractProductName(spRaw);
+      if (prod) groups.get(khLow).prods.add(prod);
+    }
+
+    lg('g', `✔ Bản ghi hợp lệ: ${totalRows} · Khách hàng unique: ${groups.size}`);
+
+    // ── Parse ds-khach-hang ──
+    const hi2 = findHdrRow(rawDS, 'khách hàng');
+    const hr2 = rawDS[hi2].map(c => nrm(String(c)));
+    let cKH2 = findCol(hr2, 'khách hàng', 'khach hang');
+    let cPH = findCol(hr2, 'điện thoại', 'dien thoai', 'phone', 'sdt', 'số đt');
+    if (cKH2 < 0) cKH2 = 2;
+    if (cPH < 0) cPH = 4;
+    lg('b', `✔ ds-khach-hang header dòng ${hi2+1} · Cột KH=${cKH2+1} Cột SĐT=${cPH+1}`);
+
+    const phoneList = [];
+    for (let i = hi2 + 1; i < rawDS.length; i++) {
+      const row = rawDS[i];
+      if (!row || row.length === 0) continue;
+      const name = nrm(String(row[cKH2] || ''));
+      const ph = nrm(String(row[cPH] || ''));
+      if (name && ph && !['nan','NaN','','null','undefined'].includes(ph)) {
+        phoneList.push({ key: low(name), phone: ph });
+      }
+    }
+    lg('b', `✔ Bản ghi có SĐT: ${phoneList.length}`);
+
+    // ── Match phones ──
+    let matchCnt = 0;
+    const finalList = [];
+
+    for (const [gkey, g] of groups) {
+      let phone = '';
+
+      // 1. Exact match
+      const exact = phoneList.find(p => p.key === gkey);
+      if (exact) {
+        phone = exact.phone;
+      } else {
+        // 2. Fuzzy best match
+        let bestScore = 0, bestPhone = '';
+        for (const p of phoneList) {
+          const score = jaroWinkler(gkey, p.key);
+          if (score > bestScore) { bestScore = score; bestPhone = p.phone; }
+        }
+        if (bestScore >= threshold) phone = bestPhone;
+      }
+
+      if (phone) matchCnt++;
+
+      finalList.push({
+        key: toKey(g.display),
+        name: g.display,
+        phone: phone,
+        products: [...g.prods].sort((a, b) => a.localeCompare(b, 'vi'))
+      });
+    }
+
+    // Sort by Vietnamese name
+    finalList.sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+    result = finalList;
+
+    lg('g', `✔ Ghép SĐT: ${matchCnt}/${finalList.length} khách hàng`);
+
+    // Update stats
+    const allProds = new Set(finalList.flatMap(r => r.products));
+    setStats(finalList.length, allProds.size, matchCnt, totalRows);
+
+    renderTable(finalList);
+
+    document.getElementById('ld').classList.remove('on');
+    ['tbox','stats','sw'].forEach(id => document.getElementById(id).classList.add('on'));
+    document.getElementById('btnExport').classList.remove('hidden');
+    document.getElementById('btnSave').style.display = 'inline-flex';
+
+    toast(`Phân tích xong: ${finalList.length} khách hàng`, 'ok');
+
+  } catch(e) {
+    document.getElementById('ld').classList.remove('on');
+    lg('r', '❌ Lỗi: ' + e.message);
+    toast('Lỗi xử lý: ' + e.message, 'err');
+    console.error(e);
+  }
+}
+
+// ─────────────────────────────────────────────
+// RENDER TABLE
+// ─────────────────────────────────────────────
+function renderTable(data) {
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  document.getElementById('cnt').textContent = data.length + ' khách hàng';
+  const empty = document.getElementById('empty');
+
+  if (!data.length) { empty.classList.add('on'); return; }
+  empty.classList.remove('on');
+
+  data.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    tr.dataset.key = row.key;
+    tr.style.animationDelay = Math.min(i * 15, 400) + 'ms';
+    tr.style.animation = 'rowIn .3s ease both';
+
+    // # 
+    const tdN = document.createElement('td');
+    tdN.className = 'td-num';
+    tdN.textContent = i + 1;
+    tr.appendChild(tdN);
+
+    // Name
+    const tdName = document.createElement('td');
+    tdName.innerHTML = `<div class="td-name">${esc(row.name)}</div>`;
+    tr.appendChild(tdName);
+
+    // Phone — editable
+    const tdPh = document.createElement('td');
+    const phVal = row.phone || '';
+    tdPh.innerHTML = `<div class="ph-wrap">
+      <input type="text" class="ph-inp ${phVal ? 'has' : 'none'}"
+        value="${esc(phVal)}"
+        placeholder="Nhập số điện thoại..."
+        data-key="${esc(row.key)}"
+        oninput="this.className='ph-inp has'"
+        onblur="onPhoneBlur(this)">
+    </div>`;
+    tr.appendChild(tdPh);
+
+    // Products — tags + add input
+    const tdSP = document.createElement('td');
+    const tagsHtml = (row.products || []).length
+      ? row.products.map(p => `<span class="tag" title="${esc(p)}">${esc(p)}</span>`).join('')
+      : `<span style="color:var(--mu);font-size:12px;">—</span>`;
+    tdSP.innerHTML = `<div class="tags-wrap">
+      <div class="tags" id="tags_${esc(row.key)}">${tagsHtml}</div>
+      <div class="add-wrap">
+        <input type="text" class="prod-inp" placeholder="Thêm sản phẩm..."
+          data-key="${esc(row.key)}"
+          onkeydown="if(event.key==='Enter'){addProduct(this);event.preventDefault();}">
+        <button class="btn-add" onclick="addProduct(this.previousElementSibling)">＋</button>
+      </div>
+    </div>`;
+    tr.appendChild(tdSP);
+
+    // Delete
+    const tdDel = document.createElement('td');
+    tdDel.innerHTML = `<button class="btn-del" title="Xóa khách hàng này" onclick="deleteRow('${esc(row.key)}')">🗑️</button>`;
+    tr.appendChild(tdDel);
+
+    tbody.appendChild(tr);
+  });
+}
+
+// ─────────────────────────────────────────────
+// INLINE EDIT HANDLERS
+// ─────────────────────────────────────────────
+function onPhoneBlur(input) {
+  const key = input.dataset.key;
+  const val = input.value.trim();
+  input.className = 'ph-inp ' + (val ? 'has' : 'none');
+  const row = result.find(r => r.key === key);
+  if (row && row.phone !== val) {
+    row.phone = val;
+    updateStats();
+  }
+}
+
+function addProduct(input) {
+  const key = input.dataset.key;
+  const val = nrm(input.value);
+  if (!val) return;
+  const row = result.find(r => r.key === key);
+  if (!row) return;
+  if (!row.products) row.products = [];
+  if (!row.products.find(p => low(p) === low(val))) {
+    row.products.push(val);
+    row.products.sort((a, b) => a.localeCompare(b, 'vi'));
+    const tagsDiv = document.getElementById('tags_' + key);
+    if (tagsDiv) {
+      tagsDiv.innerHTML = row.products.map(p => `<span class="tag" title="${esc(p)}">${esc(p)}</span>`).join('');
+    }
+    updateStats();
+  }
+  input.value = '';
+}
+
+function deleteRow(key) {
+  const row = result.find(r => r.key === key);
+  const name = row ? row.name : key;
+  if (!confirm(`Xóa khách hàng "${name}" khỏi danh sách?`)) return;
+
+  result = result.filter(r => r.key !== key);
+
+  // Remove from Firebase
+  if (fbConnected && fbDb) {
+    fbDb.ref('customers/' + key).remove()
+      .then(() => lg('g', '🗑️ Đã xóa ' + name + ' khỏi Firebase'))
+      .catch(e => lg('r', 'Lỗi xóa Firebase: ' + e.message));
+  }
+  // Remove from localStorage
+  lsSave();
+
+  filterRows();
+  updateStats();
+  toast('Đã xóa: ' + name, 'warn');
+}
+
+// ─────────────────────────────────────────────
+// SAVE (Firebase + LocalStorage)
+// ─────────────────────────────────────────────
+function saveData() {
+  if (!result.length) { toast('Chưa có dữ liệu để lưu', 'warn'); return; }
+
+  // Always save to localStorage
+  lsSave();
+
+  // Save to Firebase if connected
+  if (fbConnected && fbDb) {
+    const obj = {};
+    result.forEach(r => {
+      obj[r.key] = { key: r.key, name: r.name, phone: r.phone || '', products: r.products || [] };
+    });
+    document.getElementById('ldTxt').textContent = 'Đang lưu Firebase...';
+    document.getElementById('ld').classList.add('on');
+    fbDb.ref('customers').set(obj)
+      .then(() => {
+        document.getElementById('ld').classList.remove('on');
+        lg('g', `☁️ Đã lưu ${result.length} KH lên Firebase Realtime DB`);
+        toast(`Đã lưu ${result.length} khách hàng lên Firebase & LocalStorage ✓`, 'ok');
+      })
+      .catch(e => {
+        document.getElementById('ld').classList.remove('on');
+        lg('r', 'Lỗi Firebase: ' + e.message);
+        toast('Firebase lỗi — đã lưu LocalStorage', 'warn');
+      });
+  } else {
+    toast('Firebase chưa kết nối — Đã lưu LocalStorage ✓', 'warn');
+    lg('y', `💾 Lưu ${result.length} KH vào LocalStorage (Firebase offline)`);
+  }
+}
+
+// ─────────────────────────────────────────────
+// LOAD (Firebase → fallback LocalStorage)
+// ─────────────────────────────────────────────
+function loadData() {
+  if (fbConnected && fbDb) {
+    document.getElementById('ldTxt').textContent = 'Đang tải từ Firebase...';
+    document.getElementById('ld').classList.add('on');
+    fbDb.ref('customers').get()
+      .then(snap => {
+        document.getElementById('ld').classList.remove('on');
+        if (!snap.exists()) {
+          lg('y', '⚠ Firebase chưa có dữ liệu — thử LocalStorage...');
+          loadFromLS();
+          return;
+        }
+        const data = snap.val();
+        applyLoadedData(Object.values(data));
+        lg('g', `☁️ Tải thành công ${result.length} KH từ Firebase`);
+        toast(`Tải thành công ${result.length} khách hàng từ Firebase ✓`, 'ok');
+      })
+      .catch(e => {
+        document.getElementById('ld').classList.remove('on');
+        lg('r', 'Lỗi tải Firebase: ' + e.message);
+        loadFromLS();
+      });
+  } else {
+    loadFromLS();
+  }
+}
+
+function loadFromLS() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) { toast('Chưa có dữ liệu lưu trong LocalStorage', 'warn'); return; }
+    const data = JSON.parse(raw);
+    applyLoadedData(data);
+    lg('g', `💾 Tải ${result.length} KH từ LocalStorage`);
+    toast(`Tải ${result.length} khách hàng từ LocalStorage ✓`, 'warn');
+  } catch(e) {
+    toast('Lỗi đọc LocalStorage: ' + e.message, 'err');
+  }
+}
+
+function applyLoadedData(data) {
+  result = data.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'vi'));
+  const allProds = new Set(result.flatMap(r => r.products || []));
+  setStats(result.length, allProds.size, result.filter(r => r.phone).length, '—');
+  renderTable(result);
+  ['tbox','stats','sw'].forEach(id => document.getElementById(id).classList.add('on'));
+  document.getElementById('btnExport').classList.remove('hidden');
+  document.getElementById('btnSave').style.display = 'inline-flex';
+}
+
+function lsSave() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(result));
+    document.getElementById('lsPill').style.display = 'inline-flex';
+    document.getElementById('lsTxt').textContent = 'LocalStorage: ' + result.length + ' KH đã lưu';
+  } catch(e) {
+    lg('r', 'Lỗi LocalStorage: ' + e.message);
+  }
+}
+
+// ─────────────────────────────────────────────
+// STATS
+// ─────────────────────────────────────────────
+function setStats(kh, sp, ph, rc) {
+  document.getElementById('stKH').textContent = kh;
+  document.getElementById('stSP').textContent = sp;
+  document.getElementById('stPH').textContent = ph;
+  document.getElementById('stRC').textContent = rc;
+}
+
+function updateStats() {
+  const allProds = new Set(result.flatMap(r => r.products || []));
+  setStats(result.length, allProds.size, result.filter(r => r.phone).length, document.getElementById('stRC').textContent);
+}
+
+// ─────────────────────────────────────────────
+// SEARCH / FILTER
+// ─────────────────────────────────────────────
+function filterRows() {
+  const q = low(document.getElementById('srch').value.trim());
+  if (!q) { renderTable(result); return; }
+  const filtered = result.filter(r =>
+    low(r.name).includes(q) ||
+    (r.products || []).some(p => low(p).includes(q)) ||
+    (r.phone || '').includes(q)
+  );
+  renderTable(filtered);
+}
+
+// ─────────────────────────────────────────────
+// EXPORT EXCEL
+// ─────────────────────────────────────────────
+function doExport() {
+  if (!result.length) { toast('Chưa có dữ liệu', 'warn'); return; }
+
+  const aoa = [['STT','Tên Khách Hàng','Số Điện Thoại','Sản Phẩm','Số SP']];
+  result.forEach((r, i) => {
+    aoa.push([
+      i + 1,
+      r.name,
+      r.phone || '',
+      (r.products || []).join(', '),
+      (r.products || []).length
+    ]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+  // Column widths
+  ws['!cols'] = [
+    { wch: 5 },
+    { wch: 52 },
+    { wch: 16 },
+    { wch: 110 },
+    { wch: 8 }
+  ];
+
+  // Style header row (basic)
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let c = range.s.c; c <= range.e.c; c++) {
+    const addr = XLSX.utils.encode_cell({ r: 0, c });
+    if (!ws[addr]) continue;
+    ws[addr].s = {
+      font: { bold: true },
+      fill: { fgColor: { rgb: 'E0F2FE' } },
+      alignment: { horizontal: 'center' }
+    };
+  }
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Khach-Hang');
+
+  // Also add a stats sheet
+  const statsAoa = [
+    ['Thống Kê Tổng Hợp'],
+    [''],
+    ['Tổng khách hàng', result.length],
+    ['Có số điện thoại', result.filter(r => r.phone).length],
+    ['Chưa có SĐT', result.filter(r => !r.phone).length],
+    ['Tổng sản phẩm unique', new Set(result.flatMap(r => r.products || [])).size],
+    ['Ngày xuất', new Date().toLocaleDateString('vi-VN')]
+  ];
+  const ws2 = XLSX.utils.aoa_to_sheet(statsAoa);
+  ws2['!cols'] = [{ wch: 30 }, { wch: 20 }];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Thong-Ke');
+
+  const ts = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `khach-hang-${ts}.xlsx`);
+  toast('Xuất Excel thành công!', 'ok');
+}
+
+// ─────────────────────────────────────────────
+// TOAST NOTIFICATIONS
+// ─────────────────────────────────────────────
+function toast(msg, type = 'ok') {
+  const icons = { ok: '✅', err: '❌', warn: '⚠️' };
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = `toast-item ${type}`;
+  el.innerHTML = `<span>${icons[type]}</span><span>${esc(msg)}</span>`;
+  container.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .4s'; setTimeout(() => el.remove(), 400); }, 3500);
+}
+
+// Check LS on load
+window.addEventListener('load', () => {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      document.getElementById('lsPill').style.display = 'inline-flex';
+      document.getElementById('lsTxt').textContent = `LocalStorage: ${data.length} KH đã lưu`;
+    }
+  } catch(e) {}
+});
+</script>
+</body>
+</html>
