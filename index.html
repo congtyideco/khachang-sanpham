@@ -3,158 +3,780 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Phân Tích Dữ Liệu Khách Hàng | Gợi ý thông minh</title>
+<title>Phân Tích Dữ Liệu Khách Hàng | IDECO AI</title>
 
 <!-- SheetJS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 
-<!-- Firebase SDK v8 (GIỮ NGUYÊN NHƯ FILE GỐC) -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<!-- Firebase SDK v9 (modular hơn) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-:root {
-  --bg: #f1f5f9;
-  --surf: #ffffff;
-  --surf2: #f8fafc;
-  --bdr: #e2e8f0;
-  --bdr2: #cbd5e1;
-  --ac: #0284c7;
-  --ac-lt: #e0f2fe;
-  --ac2: #6366f1;
-  --ac2-lt: #eef2ff;
-  --gn: #059669;
-  --gn-lt: #d1fae5;
-  --am: #d97706;
-  --am-lt: #fef3c7;
-  --rd: #dc2626;
-  --rd-lt: #fee2e2;
-  --tx: #0f172a;
-  --tx2: #475569;
-  --mu: #94a3b8;
-  --r: 12px;
-  --sh: 0 1px 3px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.04);
-  --sh2: 0 4px 20px rgba(0,0,0,.12);
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Be Vietnam Pro', sans-serif; background: var(--bg); color: var(--tx); min-height: 100vh; }
-.wrap { max-width: 1440px; margin: 0 auto; padding: 28px 18px; }
+:root {
+  --bg: #f0f4f8;
+  --surface: #ffffff;
+  --surface-hover: #f8fafc;
+  --border: #e2e8f0;
+  --border-dark: #cbd5e1;
+  --primary: #0d9488;
+  --primary-dark: #0f766e;
+  --primary-light: #ccfbf1;
+  --secondary: #6366f1;
+  --secondary-light: #eef2ff;
+  --warning: #d97706;
+  --warning-light: #fef3c7;
+  --danger: #dc2626;
+  --danger-light: #fee2e2;
+  --success: #059669;
+  --success-light: #d1fae5;
+  --text: #0f172a;
+  --text-light: #475569;
+  --text-muted: #94a3b8;
+  --radius: 12px;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
 
 /* Header */
-.hdr { text-align: center; margin-bottom: 28px; }
-.hdr-badge { display: inline-flex; align-items: center; gap: 7px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2.5px; color: var(--ac); text-transform: uppercase; background: var(--ac-lt); border: 1px solid rgba(2,132,199,.2); padding: 5px 13px; border-radius: 99px; margin-bottom: 12px; }
-h1 { font-size: clamp(20px, 3vw, 30px); font-weight: 700; margin-bottom: 6px; }
-.hdr-sub { font-size: 13px; color: var(--tx2); }
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
 
-/* Firebase status */
-.fb-bar { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
-.fb-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-family: 'JetBrains Mono', monospace; padding: 4px 12px; border-radius: 99px; border: 1px solid; }
-.fb-pill.ok { background: var(--gn-lt); border-color: rgba(5,150,105,.25); color: var(--gn); }
-.fb-pill.err { background: var(--rd-lt); border-color: rgba(220,38,38,.25); color: var(--rd); }
-.fb-pill.warn { background: var(--am-lt); border-color: rgba(217,119,6,.25); color: var(--am); }
-.fb-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-.fb-dot.pulse { animation: dotPulse 1.8s ease infinite; }
-@keyframes dotPulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-.ls-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-family: 'JetBrains Mono', monospace; padding: 4px 12px; border-radius: 99px; border: 1px solid rgba(217,119,6,.25); background: var(--am-lt); color: var(--am); }
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--primary);
+  background: var(--primary-light);
+  border: 1px solid rgba(13,148,136,0.2);
+  padding: 5px 14px;
+  border-radius: 100px;
+  margin-bottom: 12px;
+}
 
-/* Upload area */
-.up-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
-@media(max-width:640px){ .up-row { grid-template-columns: 1fr; } }
-.uc { background: var(--surf); border: 1px solid var(--bdr); border-radius: var(--r); padding: 18px; box-shadow: var(--sh); }
-.uc.ok { border-color: var(--gn); }
-.uc-tag { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; letter-spacing: 2px; color: var(--mu); text-transform: uppercase; margin-bottom: 5px; }
-.uc-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
-.dz { border: 2px dashed var(--bdr2); border-radius: 8px; padding: 16px 12px; text-align: center; cursor: pointer; transition: all .2s; background: var(--surf2); position: relative; }
-.dz:hover, .dz.ov { border-color: var(--ac); background: var(--ac-lt); }
-.dz input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-.dz-ico { font-size: 20px; margin-bottom: 5px; }
-.dz-txt { font-size: 12.5px; color: var(--tx2); }
-.fok { display: none; margin-top: 8px; padding: 7px 10px; background: var(--gn-lt); border-radius: 6px; font-size: 11.5px; color: var(--gn); align-items: center; gap: 5px; }
-.fok.on { display: flex; }
+h1 {
+  font-size: clamp(22px, 4vw, 32px);
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+
+.header-sub {
+  font-size: 14px;
+  color: var(--text-light);
+}
+
+/* Firebase Status */
+.fb-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.fb-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 4px 14px;
+  border-radius: 100px;
+  border: 1px solid;
+}
+
+.fb-pill.connected {
+  background: var(--success-light);
+  border-color: rgba(5,150,105,0.25);
+  color: var(--success);
+}
+
+.fb-pill.disconnected {
+  background: var(--danger-light);
+  border-color: rgba(220,38,38,0.25);
+  color: var(--danger);
+}
+
+.fb-pill.warning {
+  background: var(--warning-light);
+  border-color: rgba(217,119,6,0.25);
+  color: var(--warning);
+}
+
+.fb-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.fb-dot.pulse {
+  animation: pulse 1.5s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Upload Grid */
+.upload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .upload-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.upload-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
+}
+
+.upload-card.loaded {
+  border-color: var(--success);
+  background: linear-gradient(135deg, var(--surface), var(--success-light));
+}
+
+.upload-card-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.upload-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dropzone {
+  border: 2px dashed var(--border-dark);
+  border-radius: 10px;
+  padding: 20px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--surface-hover);
+  position: relative;
+}
+
+.dropzone:hover, .dropzone.drag-over {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.dropzone input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.dropzone-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.dropzone-text {
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+.dropzone-text strong {
+  color: var(--primary);
+}
+
+.file-ok {
+  display: none;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: var(--success-light);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--success);
+  align-items: center;
+  gap: 6px;
+}
+
+.file-ok.show {
+  display: flex;
+}
+
+/* Catalog Section */
+.catalog-section {
+  background: linear-gradient(135deg, #fffbeb, #fef9ee);
+  border: 1px solid rgba(217,119,6,0.25);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.catalog-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.catalog-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--warning);
+  background: var(--warning-light);
+  padding: 4px 12px;
+  border-radius: 100px;
+  text-transform: uppercase;
+}
+
+.catalog-title {
+  font-size: 14px;
+  font-weight: 700;
+  flex: 1;
+}
+
+.catalog-status {
+  font-size: 11.5px;
+  font-family: monospace;
+  padding: 4px 12px;
+  border-radius: 100px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.catalog-status.loaded {
+  background: var(--success-light);
+  border-color: rgba(5,150,105,0.25);
+  color: var(--success);
+}
+
+.catalog-status.saved {
+  background: var(--primary-light);
+  border-color: rgba(13,148,136,0.25);
+  color: var(--primary);
+}
+
+.btn-save-catalog {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 100px;
+  padding: 5px 14px;
+  font-size: 11.5px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-save-catalog:hover {
+  background: var(--primary-dark);
+  transform: scale(0.98);
+}
+
+.catalog-dropzone {
+  border: 2px dashed rgba(217,119,6,0.35);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(255,255,255,0.6);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.catalog-dropzone input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.catalog-dropzone-icon {
+  font-size: 24px;
+}
+
+.catalog-dropzone-info strong {
+  display: block;
+  font-size: 12.5px;
+  color: var(--warning);
+}
+
+.catalog-dropzone-info span {
+  font-size: 11.5px;
+  color: var(--text-light);
+}
+
+.catalog-preview {
+  margin-top: 12px;
+}
+
+.catalog-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 100px;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+
+.catalog-pill {
+  font-size: 10.5px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  background: var(--warning-light);
+  color: #92400e;
+  font-family: 'JetBrains Mono', monospace;
+}
 
 /* Controls */
-.ctrl { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; padding: 14px 18px; background: var(--surf); border: 1px solid var(--bdr); border-radius: var(--r); box-shadow: var(--sh); }
-.btn { border: none; border-radius: 7px; padding: 9px 18px; font-size: 13.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all .18s; }
-.btn:active { transform: scale(.97); }
-.btn-run { background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; box-shadow: 0 2px 8px rgba(2,132,199,.3); }
-.btn-run:disabled { opacity: .4; cursor: not-allowed; }
-.btn-save { background: linear-gradient(135deg, #059669, #047857); color: #fff; }
-.btn-load { background: var(--surf); color: var(--ac); border: 1px solid rgba(2,132,199,.3); }
-.btn-load:hover { background: var(--ac-lt); }
-.btn-export { background: var(--surf); color: var(--ac2); border: 1px solid rgba(99,102,241,.3); }
-.btn-export.hidden { display: none; }
-.sim-ctrl { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
-.divider { width: 1px; height: 28px; background: var(--bdr); }
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding: 14px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn {
+  border: none;
+  border-radius: 10px;
+  padding: 9px 20px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  box-shadow: 0 2px 8px rgba(13,148,136,0.3);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--success), #047857);
+  color: white;
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--primary);
+  border: 1px solid rgba(13,148,136,0.3);
+}
+
+.btn-secondary:hover {
+  background: var(--primary-light);
+}
+
+.btn-outline {
+  background: var(--surface);
+  color: var(--secondary);
+  border: 1px solid rgba(99,102,241,0.3);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--danger), #b91c1c);
+  color: white;
+}
+
+.divider {
+  width: 1px;
+  height: 30px;
+  background: var(--border);
+}
+
+.sim-control {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+}
+
+.sim-control input {
+  width: 120px;
+}
 
 /* Stats */
-.stats { display: none; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 18px; }
-.stats.on { display: grid; }
-@media(max-width:640px){ .stats { grid-template-columns: repeat(2,1fr); } }
-.sc { background: var(--surf); border: 1px solid var(--bdr); border-radius: var(--r); padding: 14px 16px; text-align: center; }
-.sc-n { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700; color: var(--ac); line-height: 1; margin-bottom: 4px; }
-.sc-l { font-size: 10.5px; color: var(--mu); text-transform: uppercase; letter-spacing: 1px; }
+.stats-grid {
+  display: none;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.stats-grid.show {
+  display: grid;
+}
+
+@media (max-width: 640px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
 
 /* Search */
-.sw { display: none; margin-bottom: 14px; position: relative; }
-.sw.on { display: block; }
-.sw svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--mu); }
-.sw input { width: 100%; background: var(--surf); border: 1px solid var(--bdr); border-radius: 8px; padding: 10px 14px 10px 38px; font-size: 13.5px; outline: none; }
-.sw input:focus { border-color: var(--ac); box-shadow: 0 0 0 3px rgba(2,132,199,.1); }
+.search-box {
+  display: none;
+  margin-bottom: 16px;
+  position: relative;
+}
 
-.loading { display: none; text-align: center; padding: 56px 20px; }
-.loading.on { display: block; }
-.spin { width: 32px; height: 32px; border: 3px solid var(--bdr); border-top-color: var(--ac); border-radius: 50%; animation: spin .65s linear infinite; margin: 0 auto 12px; }
+.search-box.show {
+  display: block;
+}
+
+.search-box svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.search-box input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 14px 11px 40px;
+  font-size: 13.5px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.search-box input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(13,148,136,0.1);
+}
+
+/* Loading */
+.loading-overlay {
+  display: none;
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.loading-overlay.show {
+  display: block;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 0 auto 14px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 
 /* Table */
-.tbox { display: none; background: var(--surf); border: 1px solid var(--bdr); border-radius: var(--r); overflow: hidden; box-shadow: var(--sh2); }
-.tbox.on { display: block; }
-.tbox-hdr { display: flex; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid var(--bdr); background: var(--surf2); flex-wrap: wrap; gap: 8px; }
-.tbox-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-.badge { font-family: 'JetBrains Mono', monospace; font-size: 11px; background: var(--ac-lt); color: var(--ac); padding: 3px 9px; border-radius: 99px; }
-.tscroll { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; }
-thead th { background: var(--surf2); padding: 10px 14px; text-align: left; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: var(--mu); text-transform: uppercase; font-family: 'JetBrains Mono', monospace; border-bottom: 2px solid var(--bdr); }
-th.c1 { width: 48px; }
-th.c2 { min-width: 200px; }
-th.c3 { width: 175px; }
-th.c4 { min-width: 320px; }
-th.c5 { min-width: 280px; }
-th.c6 { width: 64px; text-align: center; }
-tbody tr { border-bottom: 1px solid var(--bdr); transition: background .12s; }
-tbody tr:hover { background: rgba(2,132,199,.02); }
-td { padding: 11px 14px; font-size: 13px; vertical-align: top; }
-.td-num { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--mu); }
-.td-name { font-weight: 600; }
+.table-container {
+  display: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
 
-/* Editable phone */
-.ph-inp { width: 100%; border: 1px solid transparent; border-radius: 6px; padding: 5px 9px; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: transparent; outline: none; }
-.ph-inp:hover { border-color: var(--bdr2); background: var(--surf2); }
-.ph-inp:focus { border-color: var(--ac); background: #fff; }
-.ph-inp.has { color: var(--gn); }
-.ph-inp.none { color: var(--mu); }
+.table-container.show {
+  display: block;
+}
 
-/* Product tags */
-.tags-wrap { display: flex; flex-direction: column; gap: 5px; }
-.tags { display: flex; flex-wrap: wrap; gap: 4px; }
-.tag { font-size: 11.5px; padding: 3px 9px; border-radius: 5px; background: var(--ac2-lt); border: 1px solid rgba(99,102,241,.2); color: var(--ac2); font-family: 'JetBrains Mono', monospace; }
-.add-wrap { display: flex; gap: 5px; align-items: center; margin-top: 4px; }
-.prod-inp { flex: 1; min-width: 130px; border: 1px dashed var(--bdr2); border-radius: 6px; padding: 4px 9px; font-size: 12px; background: transparent; outline: none; }
-.prod-inp:focus { border-color: var(--ac); border-style: solid; background: #fff; }
-.btn-add { background: var(--ac-lt); border: 1px solid rgba(2,132,199,.25); color: var(--ac); border-radius: 5px; padding: 3px 10px; font-size: 11.5px; font-weight: 600; cursor: pointer; }
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-hover);
+  flex-wrap: wrap;
+  gap: 10px;
+}
 
-/* DROPDOWN SUGGESTION */
-.suggest-cell { position: relative; min-width: 260px; }
+.table-title {
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 3px 10px;
+  border-radius: 100px;
+}
+
+.table-hint {
+  font-size: 11.5px;
+  color: var(--warning);
+  background: var(--warning-light);
+  padding: 3px 10px;
+  border-radius: 100px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  background: var(--surface-hover);
+  padding: 11px 14px;
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+  border-bottom: 2px solid var(--border);
+}
+
+th.col-stt { width: 50px; }
+th.col-name { min-width: 200px; }
+th.col-phone { width: 170px; }
+th.col-products { min-width: 280px; }
+th.col-suggest { min-width: 320px; }
+th.col-action { width: 60px; text-align: center; }
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+tbody tr:hover {
+  background: rgba(13,148,136,0.02);
+}
+
+td {
+  padding: 12px 14px;
+  font-size: 13px;
+  vertical-align: top;
+}
+
+.stt-cell {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.name-cell {
+  font-weight: 600;
+}
+
+/* Editable Phone */
+.phone-input {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  background: transparent;
+  outline: none;
+  transition: all 0.15s;
+}
+
+.phone-input:hover {
+  border-color: var(--border-dark);
+  background: var(--surface-hover);
+}
+
+.phone-input:focus {
+  border-color: var(--primary);
+  background: white;
+}
+
+.phone-input.has-phone {
+  color: var(--success);
+}
+
+.phone-input.no-phone {
+  color: var(--text-muted);
+}
+
+/* Product Tags */
+.products-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.product-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.product-tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: var(--secondary-light);
+  border: 1px solid rgba(99,102,241,0.2);
+  color: var(--secondary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.add-product {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.add-product-input {
+  flex: 1;
+  min-width: 130px;
+  border: 1px dashed var(--border-dark);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
+  background: transparent;
+  outline: none;
+}
+
+.add-product-input:focus {
+  border-color: var(--primary);
+  border-style: solid;
+  background: white;
+}
+
+.btn-add-product {
+  background: var(--primary-light);
+  border: 1px solid rgba(13,148,136,0.25);
+  color: var(--primary);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Suggestion Dropdown */
+.suggest-cell {
+  position: relative;
+}
+
 .suggest-trigger {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: linear-gradient(135deg, #fef3c7, #fde68a);
-  border: 1px solid rgba(217,119,6,.4);
-  border-radius: 20px;
-  padding: 5px 14px;
+  background: linear-gradient(135deg, var(--warning-light), #fde68a);
+  border: 1px solid rgba(217,119,6,0.4);
+  border-radius: 100px;
+  padding: 5px 16px;
   font-size: 12px;
   font-weight: 600;
   color: #92400e;
@@ -162,188 +784,642 @@ td { padding: 11px 14px; font-size: 13px; vertical-align: top; }
   transition: all 0.2s;
   font-family: 'JetBrains Mono', monospace;
 }
+
 .suggest-trigger:hover {
   background: linear-gradient(135deg, #fde68a, #fcd34d);
   transform: scale(0.98);
 }
-.suggest-trigger .badge-count {
+
+.suggest-badge {
   background: #92400e20;
-  border-radius: 20px;
-  padding: 0 6px;
+  border-radius: 100px;
+  padding: 0 7px;
   font-size: 10px;
 }
+
 .suggest-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
-  z-index: 1000;
-  background: var(--surf);
-  border: 1px solid var(--bdr);
-  border-radius: 10px;
-  box-shadow: var(--sh2);
-  min-width: 260px;
-  max-width: 320px;
+  z-index: 100;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  min-width: 280px;
+  max-width: 360px;
   margin-top: 6px;
   overflow: hidden;
   display: none;
 }
+
 .suggest-dropdown.show {
   display: block;
-  animation: fadeIn .15s ease;
+  animation: fadeIn 0.15s ease;
 }
+
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
 .suggest-header {
-  padding: 8px 12px;
-  background: var(--surf2);
-  border-bottom: 1px solid var(--bdr);
+  padding: 9px 14px;
+  background: var(--surface-hover);
+  border-bottom: 1px solid var(--border);
   font-size: 11px;
   font-weight: 600;
-  color: var(--tx2);
+  color: var(--text-light);
   display: flex;
   justify-content: space-between;
 }
+
 .suggest-list {
-  max-height: 260px;
+  max-height: 280px;
   overflow-y: auto;
-  padding: 4px 0;
+  padding: 5px 0;
 }
+
 .suggest-item {
   padding: 8px 14px;
   font-size: 12px;
   cursor: pointer;
   transition: background 0.1s;
-  border-bottom: 1px solid var(--bdr);
+  border-bottom: 1px solid var(--border);
   font-family: 'JetBrains Mono', monospace;
 }
-.suggest-item:last-child { border-bottom: none; }
-.suggest-item:hover {
-  background: var(--ac-lt);
-  color: var(--ac);
+
+.suggest-item:last-child {
+  border-bottom: none;
 }
-.suggest-empty-msg {
-  padding: 16px;
+
+.suggest-item:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.suggest-empty {
+  padding: 14px;
   text-align: center;
-  color: var(--mu);
+  color: var(--text-muted);
   font-size: 12px;
+}
+
+.suggest-no-catalog {
+  color: var(--text-muted);
+  font-size: 11.5px;
   font-style: italic;
 }
-.suggest-no-catalog { color: var(--mu); font-size: 11.5px; font-style: italic; }
-.btn-del { background: transparent; border: 1px solid rgba(220,38,38,.2); color: var(--rd); border-radius: 6px; padding: 5px 9px; cursor: pointer; margin: 0 auto; display: block; }
-.btn-del:hover { background: var(--rd-lt); }
 
-/* Catalog upload */
-.catalog-section {
-  background: linear-gradient(135deg, #fffbeb, #fef9ee);
-  border: 1px solid rgba(217,119,6,.25);
-  border-radius: var(--r);
-  padding: 14px 18px;
-  margin-bottom: 14px;
+.btn-delete {
+  background: transparent;
+  border: 1px solid rgba(220,38,38,0.2);
+  color: var(--danger);
+  border-radius: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
 }
-.catalog-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-.catalog-badge { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; letter-spacing: 2px; color: var(--am); text-transform: uppercase; background: var(--am-lt); padding: 3px 10px; border-radius: 99px; }
-.catalog-title { font-size: 14px; font-weight: 700; }
-.catalog-status { margin-left: auto; font-size: 11.5px; font-family: monospace; padding: 3px 10px; border-radius: 99px; border: 1px solid var(--bdr); background: var(--surf); }
-.catalog-status.loaded { color: var(--gn); border-color: rgba(5,150,105,.25); background: var(--gn-lt); }
-.catalog-dz { border: 2px dashed rgba(217,119,6,.35); border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; background: rgba(255,255,255,.6); position: relative; display: flex; align-items: center; gap: 12px; }
-.catalog-dz input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-.catalog-dz-ico { font-size: 22px; }
-.catalog-dz-info strong { display: block; font-size: 12.5px; color: var(--am); }
-.catalog-dz-info span { font-size: 11.5px; color: var(--tx2); }
-.catalog-pills { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; max-height: 60px; overflow-y: auto; }
-.catalog-pill { font-size: 10.5px; padding: 2px 8px; border-radius: 99px; background: var(--am-lt); color: #92400e; }
-.empty { display: none; text-align: center; padding: 48px 20px; color: var(--mu); }
-.empty.on { display: block; }
-.log { display: none; margin-top: 14px; background: var(--surf); border: 1px solid var(--bdr); border-radius: 8px; padding: 12px; max-height: 100px; overflow-y: auto; font-family: monospace; font-size: 10.5px; }
-.log.on { display: block; }
-.ll { line-height: 2; }
-.ll.g { color: var(--gn); }
-.ll.b { color: var(--ac); }
-.ll.y { color: var(--am); }
-.ll.r { color: var(--rd); }
-.toast { position: fixed; bottom: 22px; right: 22px; z-index: 999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-.toast-item { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,.12); pointer-events: all; animation: toastIn .3s ease; background: #fff; }
-.toast-item.ok { border-left: 3px solid var(--gn); }
-.toast-item.err { border-left: 3px solid var(--rd); }
-.toast-item.warn { border-left: 3px solid var(--am); }
-@keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
-@keyframes spin { to { transform: rotate(360deg); } }
+
+.btn-delete:hover {
+  background: var(--danger-light);
+}
+
+.empty-state {
+  display: none;
+  text-align: center;
+  padding: 50px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state.show {
+  display: block;
+}
+
+/* Log */
+.log-box {
+  display: none;
+  margin-top: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  max-height: 110px;
+  overflow-y: auto;
+  font-family: monospace;
+  font-size: 10.5px;
+}
+
+.log-box.show {
+  display: block;
+}
+
+.log-line {
+  line-height: 1.6;
+}
+
+.log-line.info { color: var(--primary); }
+.log-line.success { color: var(--success); }
+.log-line.warning { color: var(--warning); }
+.log-line.error { color: var(--danger); }
+
+/* Toast */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  pointer-events: auto;
+  animation: toastIn 0.3s ease;
+  background: white;
+}
+
+.toast.success { border-left: 3px solid var(--success); }
+.toast.error { border-left: 3px solid var(--danger); }
+.toast.warning { border-left: 3px solid var(--warning); }
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Password Dialog */
+.password-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-dialog {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 28px;
+  width: 360px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+.password-dialog h3 {
+  margin-bottom: 16px;
+  color: var(--danger);
+}
+
+.password-dialog input {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 18px;
+  font-size: 14px;
+  outline: none;
+}
+
+.password-dialog input:focus {
+  border-color: var(--primary);
+}
+
+.password-dialog button {
+  padding: 9px 22px;
+  margin: 0 8px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-confirm {
+  background: var(--danger);
+  color: white;
+}
+
+.btn-cancel {
+  background: var(--border);
+  color: var(--text);
+}
+
+/* === CLICKABLE PRODUCT TAG === */
+.product-tag {
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.product-tag .tag-del-btn {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0 1px;
+}
+.product-tag:hover {
+  background: var(--danger-light);
+  border-color: rgba(220,38,38,0.35);
+  color: var(--danger);
+}
+.product-tag:hover .tag-del-btn {
+  display: inline;
+}
+.product-tag.selected {
+  background: var(--danger-light);
+  border-color: rgba(220,38,38,0.5);
+  color: var(--danger);
+  outline: 2px solid rgba(220,38,38,0.3);
+}
+.product-tag.selected .tag-del-btn {
+  display: inline;
+}
+
+/* === CLICKABLE NAME CELL === */
+.name-cell {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.name-cell:hover {
+  color: var(--danger);
+  text-decoration: underline dotted;
+}
+.name-cell-hint {
+  display: block;
+  font-size: 9.5px;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+/* === CATALOG CLEAR BTN === */
+.catalog-clear-wrap {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: var(--success-light);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--success);
+}
+.catalog-clear-wrap.show { display: flex; }
+.catalog-clear-wrap .catalog-file-name { flex: 1; font-family: monospace; font-size: 11px; }
+.btn-catalog-clear {
+  background: var(--danger-light);
+  border: 1px solid rgba(220,38,38,0.25);
+  color: var(--danger);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* === FILE 03 UPLOAD CARD === */
+.upload-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.upload-card-3 {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border: 1.5px dashed rgba(14,165,233,0.4);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
+}
+.upload-card-3.loaded {
+  border-color: var(--primary);
+  border-style: solid;
+  background: linear-gradient(135deg, #f0fdf4, var(--success-light));
+}
+.dropzone-3 {
+  border: 2px dashed rgba(14,165,233,0.35);
+  border-radius: 10px;
+  padding: 20px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255,255,255,0.6);
+  position: relative;
+}
+.dropzone-3:hover { border-color: #0ea5e9; background: #e0f2fe; }
+.dropzone-3 input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.file-ok-3 {
+  display: none;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: var(--success-light);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--success);
+  align-items: center;
+  gap: 8px;
+}
+.file-ok-3.show { display: flex; }
+.btn-del-file3 {
+  background: var(--danger-light);
+  border: 1px solid rgba(220,38,38,0.25);
+  color: var(--danger);
+  border-radius: 6px;
+  padding: 2px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+/* === PHÂN TÍCH 2 BTN === */
+.btn-analyze2 {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  color: white;
+  box-shadow: 0 2px 8px rgba(14,165,233,0.3);
+}
+.btn-analyze2:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* === PERIOD 2 SUGGESTIONS === */
+.p2-suggest-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.p2-tag {
+  font-size: 10.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: #fff7ed;
+  border: 1px solid rgba(234,88,12,0.3);
+  color: #c2410c;
+  font-family: 'JetBrains Mono', monospace;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.p2-label {
+  font-size: 10px;
+  background: #fed7aa;
+  color: #9a3412;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 700;
+}
+.p2-section-title {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* === TRASH CONFIRM PANEL === */
+.tag-delete-panel {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 20px;
+  box-shadow: var(--shadow-lg);
+  z-index: 500;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  max-width: 500px;
+  width: 90%;
+}
+.tag-delete-panel.show { display: flex; }
+.tag-delete-panel strong { color: var(--danger); }
+.tag-delete-panel .panel-name { flex: 1; }
+.tag-delete-panel .panel-btns { display: flex; gap: 8px; }
+.btn-confirm-del {
+  background: var(--danger);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+}
+.btn-cancel-del {
+  background: var(--border);
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+}
 </style>
 </head>
 <body>
-<div class="wrap">
-<div class="hdr">
-  <div class="hdr-badge">📊 IDECO TỰ HÀO VỀ CÔNG NGHỆ AI RIÊNG</div>
-  <h1>PHÂN TÍCH KHÁCH HÀNG ĐÃ HỢP TÁC SẢN PHẨM</h1>
-  <p class="hdr-sub">Upload 2 file Excel · Tự động nhóm, trích xuất sản phẩm, bổ sung SĐT · <strong style="color:var(--am)">👉 Nhấp vào ô "💡 Gợi ý" để xem danh sách sản phẩm chưa mua</strong></p>
-  <div class="fb-bar">
-    <div class="fb-pill warn" id="fbPill"><span class="fb-dot pulse"></span><span id="fbTxt">Đang kết nối Firebase...</span></div>
-    <div class="ls-pill" id="lsPill" style="display:none">💾 <span id="lsTxt">LocalStorage sẵn sàng</span></div>
+<div class="container">
+  <div class="header">
+    <div class="header-badge">
+      <span>✨</span> IDECO AI ANALYTICS
+    </div>
+    <h1>PHÂN TÍCH KHÁCH HÀNG ĐÃ HỢP TÁC SẢN PHẨM</h1>
+    <p class="header-sub">Upload file xuất kho + danh sách khách hàng · Tự động trích xuất sản phẩm · Gợi ý thông minh</p>
+    <div class="fb-bar">
+      <div class="fb-pill warning" id="fbStatus">
+        <span class="fb-dot pulse"></span>
+        <span id="fbText">Đang kết nối Firebase...</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="upload-grid">
+    <div class="upload-card" id="cardExport">
+      <div class="upload-card-tag">📁 FILE 01</div>
+      <div class="upload-card-title">📦 Dữ liệu xuất kho</div>
+      <div class="dropzone" id="dropzoneExport">
+        <input type="file" id="fileExport" accept=".xlsx,.xls">
+        <div class="dropzone-icon">📂</div>
+        <div class="dropzone-text"><strong>Nhấn hoặc kéo thả</strong><br>File xuất kho chi tiết</div>
+      </div>
+      <div class="file-ok" id="fileExportOk">✅ <span id="exportFileName"></span></div>
+    </div>
+
+    <div class="upload-card" id="cardCustomer">
+      <div class="upload-card-tag">📁 FILE 02</div>
+      <div class="upload-card-title">👥 Danh sách khách hàng</div>
+      <div class="dropzone" id="dropzoneCustomer">
+        <input type="file" id="fileCustomer" accept=".xlsx,.xls">
+        <div class="dropzone-icon">📂</div>
+        <div class="dropzone-text"><strong>Nhấn hoặc kéo thả</strong><br>Danh sách quản lý khách hàng</div>
+      </div>
+      <div class="file-ok" id="fileCustomerOk">✅ <span id="customerFileName"></span></div>
+    </div>
+  </div>
+
+  <div class="catalog-section">
+    <div class="catalog-header">
+      <div class="catalog-badge">📋 DANH MỤC</div>
+      <div class="catalog-title">🗂️ Danh mục sản phẩm trong kỳ (tự động từ file xuất kho)</div>
+      <div class="catalog-status" id="catalogStatus">Chưa có dữ liệu</div>
+      <button class="btn-save-catalog" id="saveCatalogBtn">💾 Lưu lên Firebase</button>
+    </div>
+    <div class="catalog-dropzone" id="catalogDropzone">
+      <input type="file" id="fileCatalog" accept=".xlsx,.xls">
+      <div class="catalog-dropzone-icon">📥</div>
+      <div class="catalog-dropzone-info">
+        <strong>Upload file danh sách sản phẩm trong kỳ (tùy chọn)</strong>
+        <span>Nếu không upload, hệ thống sẽ tự xây dựng từ file xuất kho</span>
+      </div>
+    </div>
+    <!-- Catalog file loaded info + clear button -->
+    <div class="catalog-clear-wrap" id="catalogClearWrap">
+      <span>✅</span>
+      <span class="catalog-file-name" id="catalogFileName">—</span>
+      <button class="btn-catalog-clear" onclick="clearCatalogFile()">🗑️ Xóa &amp; Upload lại</button>
+    </div>
+    <div class="catalog-preview" id="catalogPreview" style="display: none;">
+      <div class="catalog-pills" id="catalogPills"></div>
+    </div>
+  </div>
+
+  <!-- FILE 03: Dữ liệu kỳ 2 để so sánh -->
+  <div class="upload-grid-3">
+    <div class="upload-card-3" id="cardFile3">
+      <div class="upload-card-tag" style="color:#0ea5e9;">📁 FILE 03 · TÙY CHỌN</div>
+      <div class="upload-card-title" style="color:#0369a1;">🔄 Dữ liệu xuất kho kỳ 2 (so sánh)</div>
+      <div class="dropzone-3" id="dropzoneFile3">
+        <input type="file" id="fileCompare" accept=".xlsx,.xls">
+        <div class="dropzone-icon" style="font-size:28px;margin-bottom:8px;">📊</div>
+        <div class="dropzone-text" style="font-size:13px;color:#475569;">
+          <strong style="color:#0ea5e9;">Nhấn hoặc kéo thả</strong><br>
+          File xuất kho kỳ 2 để so sánh với dữ liệu phân tích đầu
+        </div>
+      </div>
+      <div class="file-ok-3" id="fileCompareOk">
+        ✅ <span id="compareFileName" style="flex:1;font-family:monospace;font-size:11px;"></span>
+        <button class="btn-del-file3" onclick="clearCompareFile()">🗑️ Xóa</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-primary" id="btnAnalyze" disabled>⚡ Phân Tích Lần 1</button>
+    <button class="btn btn-analyze2 btn" id="btnAnalyze2" disabled style="display:none;">🔍 Phân Tích Lần 2</button>
+    <div class="divider"></div>
+    <button class="btn btn-success" id="btnSave" style="display: none;">💾 Lưu (Firebase + Local)</button>
+    <button class="btn btn-secondary" id="btnLoad">☁️ Tải Dữ Liệu</button>
+    <button class="btn btn-outline" id="btnExport" style="display: none;">📥 Xuất Excel</button>
+    <button class="btn btn-danger" id="btnDeleteAll">🗑️ Xóa Toàn Bộ</button>
+    <div class="sim-control">
+      <span>🔗 Ngưỡng ghép tên:</span>
+      <input type="range" id="thresholdSlider" min="55" max="95" value="75">
+      <span id="thresholdValue">75%</span>
+    </div>
+  </div>
+
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card"><div class="stat-number" id="statCustomers">0</div><div class="stat-label">Khách Hàng</div></div>
+    <div class="stat-card"><div class="stat-number" id="statProducts">0</div><div class="stat-label">Sản Phẩm</div></div>
+    <div class="stat-card"><div class="stat-number" id="statPhones">0</div><div class="stat-label">Có SĐT</div></div>
+    <div class="stat-card"><div class="stat-number" id="statRecords">0</div><div class="stat-label">Bản Ghi Gốc</div></div>
+  </div>
+
+  <div class="search-box" id="searchBox">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <circle cx="11" cy="11" r="8"/>
+      <path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input type="text" id="searchInput" placeholder="Tìm kiếm tên khách hàng hoặc sản phẩm...">
+  </div>
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p id="loadingText">Đang xử lý dữ liệu...</p>
+  </div>
+
+  <div class="table-container" id="tableContainer">
+    <div class="table-header">
+      <div class="table-title">Kết Quả Phân Tích <span class="badge" id="rowCount">0</span></div>
+      <div class="table-hint">💡 Nhấp <strong>tên SP</strong> để xóa · Nhấp <strong>tên KH</strong> để xóa hàng · Nhấp "Gợi Ý" để xem chi tiết</div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-stt">#</th>
+            <th class="col-name">Tên Khách Hàng</th>
+            <th class="col-phone">Số Điện Thoại</th>
+            <th class="col-products">Sản Phẩm Đã Mua</th>
+            <th class="col-suggest">💡 Gợi Ý Sản Phẩm</th>
+            <th class="col-action"></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="emptyState">
+      <div style="font-size: 48px; margin-bottom: 12px;">🔍</div>
+      <p>Không tìm thấy kết quả nào</p>
+    </div>
+  </div>
+
+  <div class="log-box" id="logBox"></div>
+</div>
+
+<!-- Floating product delete confirm panel -->
+<div class="tag-delete-panel" id="tagDeletePanel">
+  <span>🗑️</span>
+  <span class="panel-name">Xóa sản phẩm <strong id="panelProductName">—</strong> khỏi <em id="panelCustomerName">—</em>?</span>
+  <div class="panel-btns">
+    <button class="btn-cancel-del" onclick="cancelTagDelete()">Hủy</button>
+    <button class="btn-confirm-del" onclick="confirmTagDelete()">✓ Xóa</button>
   </div>
 </div>
 
-<div class="up-row">
-  <div class="uc" id="c1"><div class="uc-tag">File 01 · Xuất kho</div><div class="uc-title">📦 DULIEUKHA.xlsx</div><div class="dz" id="dz1"><input type="file" id="f1" accept=".xlsx,.xls"><div class="dz-ico">⬆️</div><div class="dz-txt"><strong>Nhấn hoặc kéo thả</strong>Dữ liệu xuất kho chi tiết</div></div><div class="fok" id="ok1">✅ <span id="ot1"></span></div></div>
-  <div class="uc" id="c2"><div class="uc-tag">File 02 · Danh sách</div><div class="uc-title">👥 ds-khach-hang.xlsx</div><div class="dz" id="dz2"><input type="file" id="f2" accept=".xlsx,.xls"><div class="dz-ico">⬆️</div><div class="dz-txt"><strong>Nhấn hoặc kéo thả</strong>Danh sách quản lý khách hàng</div></div><div class="fok" id="ok2">✅ <span id="ot2"></span></div></div>
-</div>
-
-<div class="catalog-section">
-  <div class="catalog-header"><div class="catalog-badge">📋 DANH MỤC</div><div class="catalog-title">🗂️ Danh Mục Sản Phẩm — Gợi Ý Đa Dạng</div><div class="catalog-status" id="catalogStatus">Chưa tải danh mục</div></div>
-  <div class="catalog-dz" id="catalogDz"><input type="file" id="fCatalog" accept=".xlsx,.xls"><div class="catalog-dz-ico">📥</div><div class="catalog-dz-info"><strong>Upload file danh mục sản phẩm (.xlsx)</strong><span>Phần mềm sẽ lưu danh mục, so chiếu với sản phẩm KH và gợi ý sản phẩm chưa mua</span></div></div>
-  <div id="catalogPreview" style="display:none"><div class="catalog-count" id="catalogCount"></div><div class="catalog-pills" id="catalogPills"></div></div>
-</div>
-
-<div class="ctrl">
-  <button class="btn btn-run" id="btnRun" onclick="runAnalysis()" disabled>⚡ Phân Tích Dữ Liệu</button>
-  <div class="divider"></div>
-  <button class="btn btn-save" id="btnSave" onclick="saveData()" style="display:none">💾 Lưu (Firebase + Local)</button>
-  <button class="btn btn-load" onclick="loadData()">☁️ Tải Dữ Liệu</button>
-  <button class="btn btn-export hidden" id="btnExport" onclick="doExport()">📥 Xuất Excel</button>
-  <div class="sim-ctrl"><span>Ngưỡng ghép SĐT:</span><input type="range" id="sim" min="55" max="95" value="75" oninput="document.getElementById('simV').textContent=this.value+'%'"><span id="simV">75%</span></div>
-</div>
-
-<div class="stats" id="stats"><div class="sc"><div class="sc-n" id="stKH">0</div><div class="sc-l">Khách Hàng</div></div><div class="sc"><div class="sc-n" id="stSP">0</div><div class="sc-l">Sản Phẩm</div></div><div class="sc"><div class="sc-n" id="stPH">0</div><div class="sc-l">Có SĐT</div></div><div class="sc"><div class="sc-n" id="stRC">0</div><div class="sc-l">Bản Ghi Gốc</div></div></div>
-
-<div class="sw" id="sw"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" id="srch" placeholder="Tìm kiếm tên khách hàng hoặc sản phẩm..." oninput="filterRows()"></div>
-
-<div class="loading" id="ld"><div class="spin"></div><p id="ldTxt">Đang xử lý dữ liệu...</p></div>
-
-<div class="tbox" id="tbox">
-  <div class="tbox-hdr"><div class="tbox-title">Kết Quả Phân Tích <span class="badge" id="cnt">0</span></div><span class="tbox-hint">✏️ <strong style="color:var(--am)">NHẤP VÀO Ô "💡 GỢI Ý"</strong> để xem danh sách sản phẩm chưa mua</span></div>
-  <div class="tscroll">
-    <table><thead><tr><th class="c1">#</th><th class="c2">Tên Khách Hàng</th><th class="c3">Số Điện Thoại</th><th class="c4">Sản Phẩm</th><th class="c5">💡 Gợi Ý (nhấp để xem)</th><th class="c6">Xóa</th></tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
-  </div>
-  <div class="empty" id="empty"><div class="empty-ico">🔍</div><p>Không tìm thấy kết quả</p></div>
-</div>
-<div class="log" id="logBox"></div>
-</div>
-<div class="toast" id="toastContainer"></div>
+<div class="toast-container" id="toastContainer"></div>
 
 <script>
-// ==================== HELPER FUNCTIONS ====================
-const _logs = []; 
-function lg(type, msg) { 
-  _logs.push({ type, msg }); 
-  if (_logs.length > 80) _logs.shift(); 
-  const b = document.getElementById('logBox'); 
-  if (b) { 
-    b.classList.add('on'); 
-    b.innerHTML = _logs.map(l => `<div class="ll ${l.type}">${esc(l.msg)}</div>`).join(''); 
-    b.scrollTop = b.scrollHeight; 
-  } 
-}
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function nrm(s) { return String(s == null ? '' : s).replace(/[\u00a0\t\r\n]+/g,' ').replace(/ {2,}/g,' ').trim(); }
-function low(s) { return nrm(s).toLowerCase(); }
-function toKey(name) { return low(name).replace(/[.#$\[\]\/\\]/g,'_').replace(/\s+/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'').substring(0,100) || 'key_'+Date.now(); }
-
-// ==================== FIREBASE CONFIG (GIỐNG HỆT FILE GỐC) ====================
-const firebaseConfig = {
+// ==================== CONFIGURATION ====================
+const FIREBASE_CONFIG = {
   apiKey: "AIzaSyCPb-_cScG3ZK_9Y7_Cbpe-_cQ7GqpXNV8",
   authDomain: "qldulieukh.firebaseapp.com",
   databaseURL: "https://qldulieukh-default-rtdb.firebaseio.com",
@@ -353,329 +1429,1548 @@ const firebaseConfig = {
   appId: "1:875989375682:web:436e932afc2899b5c5b95b"
 };
 
-let fbApp, fbDb;
-let fbConnected = false;
-let result = [];
-let rawDL = null, rawDS = null;
-let catalogProducts = [];
-
 const LS_KEY = 'kh_data_v2';
-const CATALOG_LS_KEY = 'sp_catalog_v1';
+const CATALOG_KEY = 'sp_catalog_v1';
+const CATALOG_FIREBASE_KEY = 'catalog_products';
+const DELETE_PASSWORD = 'minhtriet@2026';
 
-// Khởi tạo Firebase (GIỐNG FILE GỐC)
-try {
-  fbApp = firebase.initializeApp(firebaseConfig);
-  fbDb = firebase.database();
-  
-  // Kiểm tra kết nối - GIỐNG FILE GỐC
-  fbDb.ref('.info/connected').on('value', (snap) => {
-    fbConnected = snap.val() === true;
-    updateFbStatus();
-    if (fbConnected) {
-      lg('b', '✅ Firebase đã kết nối thành công!');
-    } else {
-      lg('y', '⚠️ Firebase mất kết nối, dùng LocalStorage thay thế');
-    }
-  });
-  
-  lg('b', '✅ Firebase SDK khởi tạo thành công');
-} catch(e) {
-  console.error('Firebase init error:', e);
-  lg('r', '❌ Firebase lỗi khởi tạo: ' + e.message);
-  fbConnected = false;
-  updateFbStatus();
-}
+// ==================== GLOBAL VARIABLES ====================
+let firebaseApp = null;
+let firebaseDb = null;
+let isFirebaseConnected = false;
 
-function updateFbStatus() {
-  const pill = document.getElementById('fbPill');
-  const txt = document.getElementById('fbTxt');
-  const lsPill = document.getElementById('lsPill');
+let exportData = null;
+let customerData = null;
+let catalogProducts = [];
+let analysisResult = [];
+let compareData = null;        // FILE 03 comparison data
+let period2Products = {};      // { customerKey: [products unique to period 2] }
+
+// Pending tag-delete state
+let _pendingDelKey = null;
+let _pendingDelProduct = null;
+
+// ==================== HELPER FUNCTIONS ====================
+let logEntries = [];
+
+function addLog(type, message) {
+  const timestamp = new Date().toLocaleTimeString('vi-VN');
+  logEntries.unshift({ type, message: `[${timestamp}] ${message}` });
+  if (logEntries.length > 100) logEntries.pop();
   
-  if (fbConnected) {
-    pill.className = 'fb-pill ok';
-    const dot = pill.querySelector('.fb-dot');
-    if (dot) dot.classList.remove('pulse');
-    txt.textContent = 'Firebase Realtime DB ✓ Đã kết nối';
-    lsPill.style.display = 'none';
-  } else {
-    pill.className = 'fb-pill err';
-    const dot = pill.querySelector('.fb-dot');
-    if (dot) dot.classList.add('pulse');
-    txt.textContent = 'Firebase: Mất kết nối — Đang dùng LocalStorage';
-    lsPill.style.display = 'inline-flex';
+  const logBox = document.getElementById('logBox');
+  if (logBox) {
+    logBox.classList.add('show');
+    logBox.innerHTML = logEntries.map(l => `<div class="log-line ${l.type}">${escapeHtml(l.message)}</div>`).join('');
   }
 }
 
-// ==================== CATALOG HANDLERS ====================
-function initCatalog() { 
-  try { 
-    const saved = localStorage.getItem(CATALOG_LS_KEY); 
-    if (saved) { 
-      catalogProducts = JSON.parse(saved); 
-      updateCatalogUI(); 
-    } 
-  } catch(e){} 
-  const dz = document.getElementById('catalogDz'), fi = document.getElementById('fCatalog'); 
-  dz.addEventListener('dragover', e=>{ e.preventDefault(); dz.classList.add('ov'); }); 
-  dz.addEventListener('dragleave', ()=>dz.classList.remove('ov')); 
-  dz.addEventListener('drop', e=>{ e.preventDefault(); dz.classList.remove('ov'); if(e.dataTransfer.files[0]) readCatalogFile(e.dataTransfer.files[0]); }); 
-  fi.addEventListener('change', ()=>{ if(fi.files[0]) readCatalogFile(fi.files[0]); }); 
+function escapeHtml(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function readCatalogFile(file) { 
-  const reader = new FileReader(); 
-  reader.onload = e => { 
-    try { 
-      const wb = XLSX.read(e.target.result, { type: 'array' }); 
-      const ws = wb.Sheets[wb.SheetNames[0]]; 
-      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' }); 
-      let hi = 0; 
-      for(let i=0;i<Math.min(8,rows.length);i++) if(rows[i].some(c=>low(String(c)).includes('tên'))) { hi=i; break; } 
-      const hr = rows[hi].map(c=>low(String(c))); 
-      let cSP = hr.findIndex(c=>c.includes('tên sp')||c.includes('tên sản phẩm')||c.includes('product')||c.includes('tên')); 
-      if(cSP<0) cSP=3; 
-      const names = new Set(); 
-      for(let i=hi+1;i<rows.length;i++) { 
-        const raw = nrm(String(rows[i][cSP]||'')); 
-        const name = extractProductName(raw); 
-        if(name && name.length>=2) names.add(name); 
-      } 
-      catalogProducts = [...names].sort((a,b)=>a.localeCompare(b,'vi')); 
-      localStorage.setItem(CATALOG_LS_KEY, JSON.stringify(catalogProducts)); 
-      updateCatalogUI(); 
-      if(result.length>0) renderTable(result); 
-      toast(`Đã tải danh mục: ${catalogProducts.length} sản phẩm`, 'ok'); 
-      lg('g',`📋 Danh mục: ${catalogProducts.length} sản phẩm từ ${file.name}`); 
-    } catch(err) { toast('Lỗi đọc danh mục: '+err.message,'err'); } 
-  }; 
-  reader.readAsArrayBuffer(file); 
+function normalize(str) {
+  return String(str == null ? '' : str).replace(/[\u00a0\t\r\n]+/g, ' ').replace(/\s{2,}/g, ' ').trim();
 }
 
-function updateCatalogUI() { 
-  const status = document.getElementById('catalogStatus'), preview = document.getElementById('catalogPreview'), count = document.getElementById('catalogCount'), pills = document.getElementById('catalogPills'); 
-  if(!catalogProducts.length) { 
-    status.className='catalog-status'; status.textContent='Chưa tải danh mục'; preview.style.display='none'; return; 
-  } 
-  status.className='catalog-status loaded'; status.textContent=`✓ ${catalogProducts.length} sản phẩm`; 
-  preview.style.display='block'; 
-  count.textContent=`💊 ${catalogProducts.length} sản phẩm trong danh mục — nhấp vào ô gợi ý để xem danh sách`; 
-  const shown = catalogProducts.slice(0,30); 
-  pills.innerHTML = shown.map(p=>`<span class="catalog-pill">${esc(p)}</span>`).join('')+(catalogProducts.length>30?`<span class="catalog-pill">+${catalogProducts.length-30}</span>`:''); 
+function toLower(str) {
+  return normalize(str).toLowerCase();
 }
 
-function getSuggestionsForRow(row) { 
-  if(!catalogProducts.length) return null; 
-  const owned = new Set((row.products||[]).map(p=>low(p))); 
-  return catalogProducts.filter(p=>!owned.has(low(p))); 
+function generateKey(name) {
+  return toLower(name).replace(/[.#$\[\]\/\\]/g, '_').replace(/\s+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').substring(0, 100) || 'key_' + Date.now();
 }
 
-function extractProductName(full) { 
-  const s = nrm(full); 
-  if(!s) return null; 
-  const first = s.charAt(0); 
-  const isUpper = (first>='A' && first<='Z') || (first !== first.toLowerCase() && first === first.toUpperCase()); 
-  if(!isUpper) return null; 
-  let n = s; 
-  const i1 = n.indexOf(' - '); if(i1>0) n=n.substring(0,i1).trim(); 
-  const i2 = n.indexOf(' ('); if(i2>0) n=n.substring(0,i2).trim(); 
-  return n.length>=2?n:null; 
+// ==================== PRODUCT NAME EXTRACTION (FIXED) ====================
+function extractProductName(fullText) {
+  const text = normalize(fullText);
+  if (!text || text.length < 2) return null;
+  
+  // Skip summary rows
+  const lowerText = toLower(text);
+  if (lowerText.includes('tổng') || lowerText.includes('total')) return null;
+  
+  let productName = text;
+  
+  // Remove quantity/package information
+  // Pattern: " - Hộp x..." or " - Chai x..." or " - Tuýp x..."
+  const dashMatch = productName.match(/^(.+?)\s+-\s+(Hộp|Chai|Tuýp|Lọ|Ống)/i);
+  if (dashMatch) {
+    productName = dashMatch[1].trim();
+  }
+  
+  // Remove content in parentheses at the end
+  const parenMatch = productName.match(/^(.+?)\s+\([^)]+\)$/);
+  if (parenMatch) {
+    productName = parenMatch[1].trim();
+  }
+  
+  // Remove trailing quantity info
+  productName = productName.replace(/\s+\d+\s*(viên|gói|ống|ml|g)$/i, '').trim();
+  
+  if (productName.length < 2) return text.split(' - ')[0].trim();
+  if (productName.length < 2) return null;
+  
+  return productName;
 }
 
-function jaroWinkler(a,b) { 
-  if(a===b) return 100; if(!a||!b) return 0; 
-  const la=a.length, lb=b.length, md=Math.max(Math.floor(Math.max(la,lb)/2)-1,0); 
-  let m=0,t=0; const am=new Uint8Array(la), bm=new Uint8Array(lb); 
-  for(let i=0;i<la;i++) { const lo=Math.max(0,i-md), hi=Math.min(i+md+1,lb); for(let j=lo;j<hi;j++) if(!bm[j] && a[i]===b[j]) { am[i]=bm[j]=1; m++; break; } } 
-  if(!m) return 0; let k=0; for(let i=0;i<la;i++) if(am[i]) { while(!bm[k]) k++; if(a[i]!==b[k]) t++; k++; } 
-  const jaro = (m/la + m/lb + (m - t/2)/m)/3; let p=0; 
-  for(let i=0;i<Math.min(4,Math.min(la,lb));i++) if(a[i]===b[i]) p++; else break; 
-  return Math.round((jaro + p*0.1*(1-jaro))*100); 
+// ==================== JARO-WINKLER SIMILARITY ====================
+function jaroWinkler(s1, s2) {
+  if (s1 === s2) return 100;
+  if (!s1 || !s2) return 0;
+  
+  const len1 = s1.length, len2 = s2.length;
+  const matchDistance = Math.max(Math.floor(Math.max(len1, len2) / 2) - 1, 0);
+  
+  let matches = 0;
+  const match1 = new Uint8Array(len1);
+  const match2 = new Uint8Array(len2);
+  
+  for (let i = 0; i < len1; i++) {
+    const start = Math.max(0, i - matchDistance);
+    const end = Math.min(i + matchDistance + 1, len2);
+    for (let j = start; j < end; j++) {
+      if (!match2[j] && s1[i] === s2[j]) {
+        match1[i] = 1;
+        match2[j] = 1;
+        matches++;
+        break;
+      }
+    }
+  }
+  
+  if (matches === 0) return 0;
+  
+  let transpositions = 0;
+  let k = 0;
+  for (let i = 0; i < len1; i++) {
+    if (match1[i]) {
+      while (!match2[k]) k++;
+      if (s1[i] !== s2[k]) transpositions++;
+      k++;
+    }
+  }
+  
+  const jaro = (matches / len1 + matches / len2 + (matches - transpositions / 2) / matches) / 3;
+  
+  let prefix = 0;
+  for (let i = 0; i < Math.min(4, Math.min(len1, len2)); i++) {
+    if (s1[i] === s2[i]) prefix++;
+    else break;
+  }
+  
+  return Math.round((jaro + prefix * 0.1 * (1 - jaro)) * 100);
 }
 
-// ==================== FILE UPLOAD ====================
-function setupFile(dzId,fId,okId,otId,cId,cb) { 
-  const dz=document.getElementById(dzId), fi=document.getElementById(fId); 
-  dz.addEventListener('dragover',e=>{e.preventDefault(); dz.classList.add('ov');}); 
-  dz.addEventListener('dragleave',()=>dz.classList.remove('ov')); 
-  dz.addEventListener('drop',e=>{e.preventDefault(); dz.classList.remove('ov'); if(e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0],okId,otId,cId,cb);}); 
-  fi.addEventListener('change',()=>{if(fi.files[0]) readFile(fi.files[0],okId,otId,cId,cb);}); 
+// ==================== FIREBASE INITIALIZATION ====================
+function initFirebase() {
+  try {
+    firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
+    firebaseDb = firebase.database();
+    
+    firebaseDb.ref('.info/connected').on('value', (snap) => {
+      isFirebaseConnected = snap.val() === true;
+      updateFirebaseStatus();
+      
+      if (isFirebaseConnected) {
+        addLog('success', '✅ Firebase đã kết nối thành công!');
+        loadCatalogFromFirebase();
+        loadCustomersFromFirebase();
+      } else {
+        addLog('warning', '⚠️ Firebase mất kết nối, sử dụng LocalStorage');
+        loadCatalogFromLocal();
+      }
+    });
+    
+    addLog('info', '✅ Firebase SDK khởi tạo thành công');
+  } catch (e) {
+    console.error('Firebase init error:', e);
+    addLog('error', '❌ Firebase lỗi khởi tạo: ' + e.message);
+    isFirebaseConnected = false;
+    updateFirebaseStatus();
+    loadCatalogFromLocal();
+  }
 }
 
-function readFile(file,okId,otId,cId,cb) { 
-  const reader=new FileReader(); 
-  reader.onload=e=>{ 
-    try { 
-      const wb=XLSX.read(e.target.result,{type:'array'}); 
-      const ws=wb.Sheets[wb.SheetNames[0]]; 
-      const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false}); 
-      cb(rows,file.name); 
-      document.getElementById(okId).classList.add('on'); 
-      document.getElementById(otId).textContent=file.name+' · '+(rows.length-1)+' dòng'; 
-      document.getElementById(cId).classList.add('ok'); 
-      checkReady(); 
-    } catch(err){ toast('Lỗi đọc file: '+err.message,'err'); } 
-  }; 
-  reader.readAsArrayBuffer(file); 
+function updateFirebaseStatus() {
+  const statusDiv = document.getElementById('fbStatus');
+  const textSpan = document.getElementById('fbText');
+  
+  if (isFirebaseConnected) {
+    statusDiv.className = 'fb-pill connected';
+    const dot = statusDiv.querySelector('.fb-dot');
+    if (dot) dot.classList.remove('pulse');
+    textSpan.textContent = 'Firebase: Đã kết nối';
+  } else {
+    statusDiv.className = 'fb-pill disconnected';
+    const dot = statusDiv.querySelector('.fb-dot');
+    if (dot) dot.classList.add('pulse');
+    textSpan.textContent = 'Firebase: Mất kết nối';
+  }
 }
 
-function checkReady() { document.getElementById('btnRun').disabled = !(rawDL && rawDS); }
+// ==================== CATALOG MANAGEMENT ====================
+function buildCatalogFromExportData(rows, headerIndex) {
+  if (!rows || rows.length <= headerIndex + 1) return 0;
+  
+  const headerRow = rows[headerIndex];
+  let productColIndex = -1;
+  
+  for (let i = 0; i < headerRow.length; i++) {
+    const cell = normalize(String(headerRow[i] || '')).toLowerCase();
+    if (cell.includes('sản phẩm') || cell.includes('tên sp') || cell.includes('product')) {
+      productColIndex = i;
+      break;
+    }
+  }
+  
+  if (productColIndex === -1) productColIndex = 4;
+  
+  const productSet = new Set();
+  
+  for (let i = headerIndex + 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row || row.length === 0) continue;
+    
+    const productRaw = normalize(String(row[productColIndex] || ''));
+    const productName = extractProductName(productRaw);
+    
+    if (productName && productName.length >= 2) {
+      productSet.add(productName);
+    }
+  }
+  
+  const newCatalog = [...productSet].sort((a, b) => a.localeCompare(b, 'vi'));
+  
+  if (newCatalog.length > 0) {
+    catalogProducts = newCatalog;
+    localStorage.setItem(CATALOG_KEY, JSON.stringify(catalogProducts));
+    updateCatalogUI();
+    addLog('success', `📋 Đã xây dựng danh mục từ file xuất kho: ${catalogProducts.length} sản phẩm`);
+    showToast(`Đã tạo danh mục ${catalogProducts.length} sản phẩm`, 'success');
+    
+    // Log UVS products for verification
+    const uvsProducts = catalogProducts.filter(p => toLower(p).includes('uvs'));
+    if (uvsProducts.length > 0) {
+      addLog('info', `🔍 Tìm thấy sản phẩm UVS: ${uvsProducts.join(', ')}`);
+    }
+    
+    return catalogProducts.length;
+  }
+  
+  return 0;
+}
 
-setupFile('dz1','f1','ok1','ot1','c1', (rows,n)=>{ rawDL=rows; lg('b','📂 DULIEUKHA: '+(rows.length-1)+' bản ghi'); });
-setupFile('dz2','f2','ok2','ot2','c2', (rows,n)=>{ rawDS=rows; lg('b','📂 ds-khach-hang: '+(rows.length-1)+' bản ghi'); });
+function loadCatalogFromFirebase() {
+  if (!isFirebaseConnected || !firebaseDb) return;
+  
+  firebaseDb.ref(CATALOG_FIREBASE_KEY).get().then(snap => {
+    if (snap.exists()) {
+      const data = snap.val();
+      if (Array.isArray(data) && data.length > 0) {
+        catalogProducts = data;
+        localStorage.setItem(CATALOG_KEY, JSON.stringify(catalogProducts));
+        updateCatalogUI();
+        addLog('success', `📋 Đã tải danh mục từ Firebase: ${catalogProducts.length} sản phẩm`);
+        showToast(`Đã tải danh mục từ Firebase`, 'success');
+        if (analysisResult.length > 0) renderTable(analysisResult);
+      } else {
+        loadCatalogFromLocal();
+      }
+    } else {
+      loadCatalogFromLocal();
+    }
+  }).catch(e => {
+    addLog('warning', 'Không thể tải danh mục từ Firebase: ' + e.message);
+    loadCatalogFromLocal();
+  });
+}
+
+function loadCatalogFromLocal() {
+  try {
+    const saved = localStorage.getItem(CATALOG_KEY);
+    if (saved) {
+      catalogProducts = JSON.parse(saved);
+      updateCatalogUI();
+      addLog('info', `📋 Đã tải danh mục từ LocalStorage: ${catalogProducts.length} sản phẩm`);
+      if (analysisResult.length > 0) renderTable(analysisResult);
+    } else {
+      updateCatalogUI();
+    }
+  } catch(e) {
+    addLog('error', 'Lỗi đọc danh mục từ LocalStorage');
+  }
+}
+
+function saveCatalogToFirebase() {
+  if (!isFirebaseConnected || !firebaseDb) {
+    showToast('Firebase chưa kết nối, chỉ lưu LocalStorage', 'warning');
+    localStorage.setItem(CATALOG_KEY, JSON.stringify(catalogProducts));
+    updateCatalogUI();
+    return;
+  }
+  
+  if (!catalogProducts.length) {
+    showToast('Chưa có danh mục để lưu', 'warning');
+    return;
+  }
+  
+  showLoading('Đang lưu danh mục lên Firebase...');
+  
+  firebaseDb.ref(CATALOG_FIREBASE_KEY).set(catalogProducts).then(() => {
+    hideLoading();
+    addLog('success', `☁️ Đã lưu danh mục (${catalogProducts.length} sản phẩm) lên Firebase`);
+    showToast(`Đã lưu ${catalogProducts.length} sản phẩm lên Firebase`, 'success');
+    updateCatalogUI();
+  }).catch(e => {
+    hideLoading();
+    addLog('error', 'Lỗi lưu danh mục: ' + e.message);
+    showToast('Lỗi lưu danh mục: ' + e.message, 'error');
+  });
+}
+
+function readCatalogFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const workbook = XLSX.read(e.target.result, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+      
+      let headerIndex = 0;
+      for (let i = 0; i < Math.min(8, rows.length); i++) {
+        if (rows[i] && rows[i].some(c => toLower(String(c)).includes('tên'))) {
+          headerIndex = i;
+          break;
+        }
+      }
+      
+      const headerRow = rows[headerIndex].map(c => toLower(String(c)));
+      let productCol = headerRow.findIndex(c => c.includes('tên sp') || c.includes('tên sản phẩm') || c.includes('product'));
+      if (productCol < 0) productCol = 3;
+      
+      const productSet = new Set();
+      for (let i = headerIndex + 1; i < rows.length; i++) {
+        const raw = normalize(String(rows[i][productCol] || ''));
+        const name = extractProductName(raw);
+        if (name && name.length >= 2) productSet.add(name);
+      }
+      
+      catalogProducts = [...productSet].sort((a, b) => a.localeCompare(b, 'vi'));
+      localStorage.setItem(CATALOG_KEY, JSON.stringify(catalogProducts));
+      updateCatalogUI();
+      
+      // Show clear button
+      const clearWrap = document.getElementById('catalogClearWrap');
+      const fileNameSpan = document.getElementById('catalogFileName');
+      if (clearWrap) { clearWrap.classList.add('show'); }
+      if (fileNameSpan) { fileNameSpan.textContent = `${file.name} · ${catalogProducts.length} sản phẩm`; }
+      
+      if (analysisResult.length > 0) renderTable(analysisResult);
+      
+      showToast(`Đã tải danh mục: ${catalogProducts.length} sản phẩm`, 'success');
+      addLog('success', `📋 Danh mục: ${catalogProducts.length} sản phẩm từ ${file.name}`);
+    } catch(err) {
+      showToast('Lỗi đọc danh mục: ' + err.message, 'error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function updateCatalogUI() {
+  const statusDiv = document.getElementById('catalogStatus');
+  const previewDiv = document.getElementById('catalogPreview');
+  const pillsDiv = document.getElementById('catalogPills');
+  
+  if (!catalogProducts.length) {
+    statusDiv.className = 'catalog-status';
+    statusDiv.textContent = 'Chưa có danh mục (tự động từ file xuất kho)';
+    previewDiv.style.display = 'none';
+    return;
+  }
+  
+  statusDiv.className = 'catalog-status loaded';
+  statusDiv.textContent = `✓ ${catalogProducts.length} sản phẩm`;
+  previewDiv.style.display = 'block';
+  
+  const displayed = catalogProducts.slice(0, 60);
+  pillsDiv.innerHTML = displayed.map(p => `<span class="catalog-pill">${escapeHtml(p)}</span>`).join('');
+  if (catalogProducts.length > 60) {
+    pillsDiv.innerHTML += `<span class="catalog-pill">+${catalogProducts.length - 60}</span>`;
+  }
+}
+
+function clearCatalogFile() {
+  if (!confirm('Xóa file danh mục đã upload?\n(Danh mục sẽ được tự động xây dựng lại từ file xuất kho sau khi phân tích)')) return;
+  catalogProducts = [];
+  localStorage.removeItem(CATALOG_KEY);
+  document.getElementById('catalogClearWrap').classList.remove('show');
+  document.getElementById('catalogFileName').textContent = '—';
+  // Reset catalog file input
+  const input = document.getElementById('fileCatalog');
+  if (input) input.value = '';
+  updateCatalogUI();
+  if (analysisResult.length > 0) renderTable(analysisResult);
+  showToast('Đã xóa danh mục upload. Sẽ tự xây dựng lại khi phân tích.', 'warning');
+}
+
+function getSuggestionsForCustomer(customer) {
+  if (!catalogProducts.length) return null;
+  
+  const owned = new Set((customer.products || []).map(p => toLower(p)));
+  return catalogProducts.filter(p => !owned.has(toLower(p)));
+}
+
+// ==================== FILE UPLOAD HANDLERS ====================
+function setupFileUpload(dropzoneId, fileInputId, okId, fileNameSpanId, cardId, onLoad) {
+  const dropzone = document.getElementById(dropzoneId);
+  const fileInput = document.getElementById(fileInputId);
+  
+  dropzone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropzone.classList.add('drag-over');
+  });
+  
+  dropzone.addEventListener('dragleave', () => {
+    dropzone.classList.remove('drag-over');
+  });
+  
+  dropzone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropzone.classList.remove('drag-over');
+    if (e.dataTransfer.files[0]) {
+      processFile(e.dataTransfer.files[0], fileInput, okId, fileNameSpanId, cardId, onLoad);
+    }
+  });
+  
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) {
+      processFile(fileInput.files[0], fileInput, okId, fileNameSpanId, cardId, onLoad);
+    }
+  });
+}
+
+function processFile(file, fileInput, okId, fileNameSpanId, cardId, onLoad) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const workbook = XLSX.read(e.target.result, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false });
+      
+      onLoad(rows, file.name);
+      
+      document.getElementById(okId).classList.add('show');
+      document.getElementById(fileNameSpanId).textContent = `${file.name} · ${rows.length - 1} dòng`;
+      document.getElementById(cardId).classList.add('loaded');
+      
+      checkReadyForAnalysis();
+    } catch(err) {
+      showToast('Lỗi đọc file: ' + err.message, 'error');
+      addLog('error', 'Lỗi đọc file: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function checkReadyForAnalysis() {
+  const btnAnalyze = document.getElementById('btnAnalyze');
+  btnAnalyze.disabled = !(exportData && customerData);
+}
 
 // ==================== MAIN ANALYSIS ====================
-function runAnalysis() { if(!rawDL||!rawDS) return; document.getElementById('ld').classList.add('on'); document.getElementById('ldTxt').textContent='Đang xử lý...'; ['tbox','stats','sw'].forEach(id=>document.getElementById(id).classList.remove('on')); document.getElementById('btnExport').classList.add('hidden'); document.getElementById('btnSave').style.display='none'; setTimeout(doAnalysis,40); }
-
-function doAnalysis() { 
-  try { 
-    const threshold=parseInt(document.getElementById('sim').value); 
-    let hi=0; for(let i=0;i<Math.min(8,rawDL.length);i++) if(rawDL[i].some(c=>low(String(c)).includes('khách'))) { hi=i; break; } 
-    const hr=rawDL[hi].map(c=>nrm(String(c))); 
-    let cKH=hr.findIndex(c=>low(c).includes('khách')), cSP=hr.findIndex(c=>low(c).includes('sản phẩm')||low(c).includes('product')); 
-    if(cKH<0) cKH=3; if(cSP<0) cSP=5; 
-    const groups=new Map(); let totalRows=0; 
-    for(let i=hi+1;i<rawDL.length;i++) { 
-      const row=rawDL[i]; if(!row||row.length===0) continue; 
-      const khRaw=nrm(String(row[cKH]||'')); const spRaw=nrm(String(row[cSP]||'')); const khLow=low(khRaw); 
-      if(!khRaw||/^(tổng|total|khách hàng|nan)$/i.test(khLow)) continue; 
-      totalRows++; 
-      if(!groups.has(khLow)) groups.set(khLow,{display:khRaw,prods:new Set()}); 
-      const prod=extractProductName(spRaw); if(prod) groups.get(khLow).prods.add(prod); 
-    } 
-    let hi2=0; for(let i=0;i<Math.min(8,rawDS.length);i++) if(rawDS[i].some(c=>low(String(c)).includes('khách'))) { hi2=i; break; } 
-    const hr2=rawDS[hi2].map(c=>nrm(String(c))); 
-    let cKH2=hr2.findIndex(c=>low(c).includes('khách')), cPH=hr2.findIndex(c=>low(c).includes('điện')||low(c).includes('phone')||low(c).includes('sđt')); 
-    if(cKH2<0) cKH2=2; if(cPH<0) cPH=4; 
-    const phoneList=[]; 
-    for(let i=hi2+1;i<rawDS.length;i++) { const row=rawDS[i]; if(!row) continue; const name=nrm(String(row[cKH2]||'')); const ph=nrm(String(row[cPH]||'')); if(name && ph && !['nan','NaN','','null','undefined'].includes(ph)) phoneList.push({key:low(name),phone:ph}); } 
-    const finalList=[]; let matchCnt=0; 
-    for(const [gkey,g] of groups) { 
-      let phone=''; const exact=phoneList.find(p=>p.key===gkey); 
-      if(exact) phone=exact.phone; 
-      else { let bestScore=0, bestPhone=''; for(const p of phoneList) { const score=jaroWinkler(gkey,p.key); if(score>bestScore){bestScore=score; bestPhone=p.phone;} } if(bestScore>=threshold) phone=bestPhone; } 
-      if(phone) matchCnt++; 
-      finalList.push({key:toKey(g.display), name:g.display, phone:phone, products:[...g.prods].sort((a,b)=>a.localeCompare(b,'vi'))}); 
-    } 
-    finalList.sort((a,b)=>a.name.localeCompare(b.name,'vi')); 
-    result=finalList; 
-    const allProds=new Set(finalList.flatMap(r=>r.products)); 
-    setStats(finalList.length, allProds.size, matchCnt, totalRows); 
-    renderTable(finalList); 
-    document.getElementById('ld').classList.remove('on'); 
-    ['tbox','stats','sw'].forEach(id=>document.getElementById(id).classList.add('on')); 
-    document.getElementById('btnExport').classList.remove('hidden'); 
-    document.getElementById('btnSave').style.display='inline-flex'; 
-    toast(`Phân tích xong: ${finalList.length} khách hàng`, 'ok'); 
-  } catch(e){ document.getElementById('ld').classList.remove('on'); lg('r','❌ Lỗi: '+e.message); toast('Lỗi xử lý: '+e.message,'err'); } 
+function runAnalysis() {
+  if (!exportData || !customerData) return;
+  
+  showLoading('Đang phân tích dữ liệu...');
+  
+  setTimeout(() => {
+    try {
+      const threshold = parseInt(document.getElementById('thresholdSlider').value);
+      
+      // Find header row in export data
+      let headerIndex = 0;
+      for (let i = 0; i < Math.min(8, exportData.length); i++) {
+        if (exportData[i] && exportData[i].some(c => toLower(String(c)).includes('khách'))) {
+          headerIndex = i;
+          break;
+        }
+      }
+      
+      // Auto-build catalog from export data
+      buildCatalogFromExportData(exportData, headerIndex);
+      
+      const headerRow = exportData[headerIndex].map(c => normalize(String(c)));
+      let customerCol = headerRow.findIndex(c => toLower(c).includes('khách'));
+      let productCol = headerRow.findIndex(c => toLower(c).includes('sản phẩm') || toLower(c).includes('product'));
+      
+      if (customerCol < 0) customerCol = 3;
+      if (productCol < 0) productCol = 5;
+      
+      // Group products by customer
+      const customerMap = new Map();
+      let totalRecords = 0;
+      
+      for (let i = headerIndex + 1; i < exportData.length; i++) {
+        const row = exportData[i];
+        if (!row || row.length === 0) continue;
+        
+        const customerRaw = normalize(String(row[customerCol] || ''));
+        const productRaw = normalize(String(row[productCol] || ''));
+        const customerKey = toLower(customerRaw);
+        
+        if (!customerRaw || /^(tổng|total|khách hàng|nan)$/i.test(customerKey)) continue;
+        
+        totalRecords++;
+        
+        if (!customerMap.has(customerKey)) {
+          customerMap.set(customerKey, { display: customerRaw, products: new Set() });
+        }
+        
+        const product = extractProductName(productRaw);
+        if (product) customerMap.get(customerKey).products.add(product);
+      }
+      
+      // Process customer list file
+      let custHeaderIndex = 0;
+      for (let i = 0; i < Math.min(8, customerData.length); i++) {
+        if (customerData[i] && customerData[i].some(c => toLower(String(c)).includes('khách'))) {
+          custHeaderIndex = i;
+          break;
+        }
+      }
+      
+      const custHeaderRow = customerData[custHeaderIndex].map(c => normalize(String(c)));
+      let custNameCol = custHeaderRow.findIndex(c => toLower(c).includes('khách'));
+      let phoneCol = custHeaderRow.findIndex(c => toLower(c).includes('điện') || toLower(c).includes('phone') || toLower(c).includes('sđt'));
+      
+      if (custNameCol < 0) custNameCol = 2;
+      if (phoneCol < 0) phoneCol = 4;
+      
+      const phoneList = [];
+      for (let i = custHeaderIndex + 1; i < customerData.length; i++) {
+        const row = customerData[i];
+        if (!row) continue;
+        const name = normalize(String(row[custNameCol] || ''));
+        const phone = normalize(String(row[phoneCol] || ''));
+        if (name && phone && !['nan', 'NaN', '', 'null', 'undefined'].includes(phone)) {
+          phoneList.push({ key: toLower(name), phone: phone });
+        }
+      }
+      
+      // Match customers with phone numbers
+      const results = [];
+      let matchedPhones = 0;
+      
+      for (const [key, data] of customerMap) {
+        let phone = '';
+        
+        const exactMatch = phoneList.find(p => p.key === key);
+        if (exactMatch) {
+          phone = exactMatch.phone;
+        } else {
+          let bestScore = 0, bestPhone = '';
+          for (const p of phoneList) {
+            const score = jaroWinkler(key, p.key);
+            if (score > bestScore) {
+              bestScore = score;
+              bestPhone = p.phone;
+            }
+          }
+          if (bestScore >= threshold) phone = bestPhone;
+        }
+        
+        if (phone) matchedPhones++;
+        
+        results.push({
+          key: generateKey(data.display),
+          name: data.display,
+          phone: phone,
+          products: [...data.products].sort((a, b) => a.localeCompare(b, 'vi'))
+        });
+      }
+      
+      results.sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+      analysisResult = results;
+      
+      const allProducts = new Set(results.flatMap(r => r.products));
+      
+      updateStats(results.length, allProducts.size, matchedPhones, totalRecords);
+      renderTable(results);
+      
+      hideLoading();
+      document.getElementById('statsGrid').classList.add('show');
+      document.getElementById('searchBox').classList.add('show');
+      document.getElementById('tableContainer').classList.add('show');
+      document.getElementById('btnSave').style.display = 'inline-flex';
+      document.getElementById('btnExport').style.display = 'inline-flex';
+      
+      showToast(`Phân tích xong: ${results.length} khách hàng, ${allProducts.size} sản phẩm`, 'success');
+      addLog('success', `✅ Phân tích hoàn tất: ${results.length} KH, ${allProducts.size} SP`);
+      
+    } catch(e) {
+      hideLoading();
+      addLog('error', '❌ Lỗi phân tích: ' + e.message);
+      showToast('Lỗi xử lý: ' + e.message, 'error');
+    }
+  }, 50);
 }
 
 // ==================== RENDER TABLE ====================
-function renderTable(data) { 
-  const tbody=document.getElementById('tbody'); 
-  tbody.innerHTML=''; 
-  document.getElementById('cnt').textContent=data.length+' khách hàng'; 
-  const empty=document.getElementById('empty'); 
-  if(!data.length){ empty.classList.add('on'); return; } 
-  empty.classList.remove('on'); 
-  data.forEach((row,i)=>{ 
-    const tr=document.createElement('tr'); tr.dataset.key=row.key; 
-    const tdN=document.createElement('td'); tdN.className='td-num'; tdN.textContent=i+1; tr.appendChild(tdN); 
-    const tdName=document.createElement('td'); tdName.innerHTML=`<div class="td-name">${esc(row.name)}</div>`; tr.appendChild(tdName); 
-    const tdPh=document.createElement('td'); tdPh.innerHTML=`<div><input type="text" class="ph-inp ${row.phone?'has':'none'}" value="${esc(row.phone)}" placeholder="Nhập SĐT..." data-key="${esc(row.key)}" onblur="onPhoneBlur(this)"></div>`; tr.appendChild(tdPh); 
-    const tdSP=document.createElement('td'); tdSP.innerHTML=`<div class="tags-wrap"><div class="tags" id="tags_${esc(row.key)}">${(row.products||[]).map(p=>`<span class="tag">${esc(p)}</span>`).join('')||'<span style="color:var(--mu);">—</span>'}</div><div class="add-wrap"><input type="text" class="prod-inp" placeholder="Thêm sản phẩm..." data-key="${esc(row.key)}" onkeydown="if(event.key==='Enter'){addProduct(this);}"><button class="btn-add" onclick="addProduct(this.previousElementSibling)">＋</button></div></div>`; tr.appendChild(tdSP); 
-    const tdSuggest=document.createElement('td'); tdSuggest.className='suggest-cell'; 
-    const suggestions=getSuggestionsForRow(row); 
-    if(suggestions===null) tdSuggest.innerHTML=`<span class="suggest-no-catalog">— Chưa tải danh mục —</span>`; 
-    else if(suggestions.length===0) tdSuggest.innerHTML=`<span class="suggest-empty">✅ Đã mua tất cả sản phẩm</span>`; 
-    else { const dropdownId=`dropdown_${row.key}`; tdSuggest.innerHTML=`<div class="suggest-trigger" data-dropdown="${dropdownId}" onclick="event.stopPropagation(); toggleDropdown('${dropdownId}')">💡 Gợi ý <span class="badge-count">${suggestions.length}</span> sản phẩm ▼</div><div id="${dropdownId}" class="suggest-dropdown"><div class="suggest-header"><span>📦 Sản phẩm chưa mua (${suggestions.length})</span><span style="cursor:pointer" onclick="closeDropdown('${dropdownId}')">✕</span></div><div class="suggest-list" id="list_${dropdownId}"></div></div>`; } 
-    tr.appendChild(tdSuggest); 
-    const tdDel=document.createElement('td'); tdDel.innerHTML=`<button class="btn-del" onclick="deleteRow('${esc(row.key)}')">🗑️</button>`; tr.appendChild(tdDel); 
-    tbody.appendChild(tr); 
-  }); 
-  data.forEach(row=>{ const suggestions=getSuggestionsForRow(row); if(suggestions && suggestions.length>0){ const listDiv=document.getElementById(`list_dropdown_${row.key}`); if(listDiv){ listDiv.innerHTML=suggestions.slice(0,60).map(p=>`<div class="suggest-item" onclick="addSuggestionProduct('${esc(row.key)}','${esc(p)}'); closeDropdown('dropdown_${row.key}');">${esc(p)}</div>`).join('')+(suggestions.length>60?`<div class="suggest-item" style="color:var(--mu);">+${suggestions.length-60} sản phẩm khác...</div>`:''); } } }); 
+function renderTable(data) {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  document.getElementById('rowCount').textContent = data.length + ' khách hàng';
+  
+  const emptyState = document.getElementById('emptyState');
+  if (!data.length) {
+    emptyState.classList.add('show');
+    return;
+  }
+  emptyState.classList.remove('show');
+  
+  data.forEach((customer, index) => {
+    const row = document.createElement('tr');
+    row.dataset.key = customer.key;
+    
+    // STT
+    const tdStt = document.createElement('td');
+    tdStt.className = 'stt-cell';
+    tdStt.textContent = index + 1;
+    row.appendChild(tdStt);
+    
+    // Name - clickable to delete customer
+    const tdName = document.createElement('td');
+    tdName.className = 'name-cell';
+    tdName.innerHTML = `${escapeHtml(customer.name)}<span class="name-cell-hint">🖱️ Nhấp để xóa KH này</span>`;
+    tdName.title = 'Nhấp để xóa khách hàng này';
+    tdName.onclick = () => deleteCustomerByClick(customer.key);
+    row.appendChild(tdName);
+    
+    // Phone
+    const tdPhone = document.createElement('td');
+    tdPhone.innerHTML = `<input type="text" class="phone-input ${customer.phone ? 'has-phone' : 'no-phone'}" value="${escapeHtml(customer.phone)}" placeholder="Nhập SĐT..." data-key="${escapeHtml(customer.key)}" onblur="updatePhone(this)">`;
+    row.appendChild(tdPhone);
+    
+    // Products
+    const tdProducts = document.createElement('td');
+    const productTagsHtml = (customer.products || []).map(p => 
+      `<span class="product-tag" onclick="requestTagDelete('${escapeHtml(customer.key)}','${escapeHtml(p.replace(/'/g,"&#39;"))}',this)" title="Nhấp để xóa sản phẩm này">
+        ${escapeHtml(p)}<button class="tag-del-btn" tabindex="-1">✕</button>
+       </span>`
+    ).join('') || '<span style="color:var(--text-muted);">—</span>';
+
+    const productsHtml = `
+      <div class="products-wrapper">
+        <div class="product-tags" id="productTags_${customer.key}">
+          ${productTagsHtml}
+        </div>
+        <div class="add-product">
+          <input type="text" class="add-product-input" placeholder="Thêm sản phẩm..." data-key="${escapeHtml(customer.key)}" onkeydown="if(event.key==='Enter'){addProductToCustomer(this);}">
+          <button class="btn-add-product" onclick="addProductToCustomer(this.previousElementSibling)">+ Thêm</button>
+        </div>
+      </div>
+    `;
+    tdProducts.innerHTML = productsHtml;
+    row.appendChild(tdProducts);
+    
+    // Suggestions
+    const tdSuggest = document.createElement('td');
+    tdSuggest.className = 'suggest-cell';
+    
+    const suggestions = getSuggestionsForCustomer(customer);
+    const p2prods = period2Products[customer.key] || [];
+    
+    let suggestContent = '';
+    
+    if (p2prods.length > 0) {
+      suggestContent += `<div class="p2-suggest-wrap" style="margin-bottom:8px;">
+        <div class="p2-section-title">🆕 Sản phẩm KH tương tác kỳ 2 (chưa có kỳ 1):</div>
+        ${p2prods.map(p => `<span class="p2-tag"><span class="p2-label">KỲ 2</span>${escapeHtml(p)}</span>`).join('')}
+      </div>`;
+    }
+    
+    if (suggestions === null) {
+      suggestContent += '<span class="suggest-no-catalog">— Chưa có danh mục —</span>';
+    } else if (suggestions.length === 0) {
+      suggestContent += '<span class="suggest-empty">✅ Đã mua tất cả sản phẩm trong danh mục</span>';
+    } else {
+      const dropdownId = `dropdown_${customer.key}`;
+      suggestContent += `
+        <div class="suggest-trigger" data-dropdown="${dropdownId}" onclick="event.stopPropagation(); toggleSuggestDropdown('${dropdownId}')">
+          💡 Gợi ý <span class="suggest-badge">${suggestions.length}</span> sản phẩm ▼
+        </div>
+        <div id="${dropdownId}" class="suggest-dropdown">
+          <div class="suggest-header">
+            <span>📦 Sản phẩm chưa tương tác (${suggestions.length})</span>
+            <span style="cursor:pointer" onclick="closeSuggestDropdown('${dropdownId}')">✕</span>
+          </div>
+          <div class="suggest-list" id="suggestList_${dropdownId}"></div>
+        </div>
+      `;
+    }
+    tdSuggest.innerHTML = suggestContent;
+    row.appendChild(tdSuggest);
+    
+    // Delete button
+    const tdDelete = document.createElement('td');
+    tdDelete.innerHTML = `<button class="btn-delete" onclick="deleteCustomer('${escapeHtml(customer.key)}')">🗑️</button>`;
+    row.appendChild(tdDelete);
+    
+    tbody.appendChild(row);
+  });
+  
+  // Populate suggestion lists
+  data.forEach(customer => {
+    const suggestions = getSuggestionsForCustomer(customer);
+    if (suggestions && suggestions.length > 0) {
+      const listDiv = document.getElementById(`suggestList_dropdown_${customer.key}`);
+      if (listDiv) {
+        listDiv.innerHTML = suggestions.slice(0, 80).map(p => 
+          `<div class="suggest-item" onclick="addSuggestedProduct('${escapeHtml(customer.key)}', '${escapeHtml(p)}'); closeSuggestDropdown('dropdown_${customer.key}');">
+            ${escapeHtml(p)}
+          </div>`
+        ).join('');
+      }
+    }
+  });
 }
 
-function toggleDropdown(id) { 
-  const el=document.getElementById(id); if(!el) return; 
-  const isShow=el.classList.contains('show'); 
-  document.querySelectorAll('.suggest-dropdown.show').forEach(d=>d.classList.remove('show')); 
-  if(!isShow) { el.classList.add('show'); setTimeout(()=>{ document.addEventListener('click', function clickOutside(e){ if(!el.contains(e.target) && !e.target.closest('.suggest-trigger')) { el.classList.remove('show'); document.removeEventListener('click', clickOutside); } }); }, 10); } 
+function toggleSuggestDropdown(id) {
+  const element = document.getElementById(id);
+  if (!element) return;
+  
+  const isVisible = element.classList.contains('show');
+  document.querySelectorAll('.suggest-dropdown.show').forEach(d => d.classList.remove('show'));
+  
+  if (!isVisible) {
+    element.classList.add('show');
+    setTimeout(() => {
+      document.addEventListener('click', function clickOutside(e) {
+        if (!element.contains(e.target) && !e.target.closest('.suggest-trigger')) {
+          element.classList.remove('show');
+          document.removeEventListener('click', clickOutside);
+        }
+      });
+    }, 10);
+  }
 }
-function closeDropdown(id) { const el=document.getElementById(id); if(el) el.classList.remove('show'); }
-function addSuggestionProduct(key, prodName) { 
-  const row=result.find(r=>r.key===key); if(!row) return; 
-  if(!row.products.includes(prodName)) { 
-    row.products.push(prodName); row.products.sort((a,b)=>a.localeCompare(b,'vi')); 
-    const tagsDiv=document.getElementById(`tags_${key}`); if(tagsDiv) tagsDiv.innerHTML=row.products.map(p=>`<span class="tag">${esc(p)}</span>`).join(''); 
-    refreshSuggestCell(key, row); updateStats(); toast(`Đã thêm "${prodName}" cho ${row.name}`, 'ok'); 
-  } 
+
+function closeSuggestDropdown(id) {
+  const element = document.getElementById(id);
+  if (element) element.classList.remove('show');
 }
-function refreshSuggestCell(key, row) { 
-  const tr=document.querySelector(`tr[data-key="${CSS.escape(key)}"]`); if(!tr) return; 
-  const tds=tr.querySelectorAll('td'); if(tds.length<5) return; 
-  const tdSuggest=tds[4]; const suggestions=getSuggestionsForRow(row); 
-  if(suggestions===null) tdSuggest.innerHTML=`<span class="suggest-no-catalog">— Chưa tải danh mục —</span>`; 
-  else if(suggestions.length===0) tdSuggest.innerHTML=`<span class="suggest-empty">✅ Đã mua tất cả sản phẩm</span>`; 
-  else { const dropdownId=`dropdown_${key}`; tdSuggest.innerHTML=`<div class="suggest-trigger" data-dropdown="${dropdownId}" onclick="event.stopPropagation(); toggleDropdown('${dropdownId}')">💡 Gợi ý <span class="badge-count">${suggestions.length}</span> sản phẩm ▼</div><div id="${dropdownId}" class="suggest-dropdown"><div class="suggest-header"><span>📦 Sản phẩm chưa mua (${suggestions.length})</span><span style="cursor:pointer" onclick="closeDropdown('${dropdownId}')">✕</span></div><div class="suggest-list" id="list_${dropdownId}"></div></div>`; 
-    const listDiv=document.getElementById(`list_${dropdownId}`); if(listDiv) listDiv.innerHTML=suggestions.slice(0,60).map(p=>`<div class="suggest-item" onclick="addSuggestionProduct('${esc(key)}','${esc(p)}'); closeDropdown('${dropdownId}');">${esc(p)}</div>`).join('')+(suggestions.length>60?`<div class="suggest-item">+${suggestions.length-60} sản phẩm khác...</div>`:''); 
-  } 
+
+function addSuggestedProduct(customerKey, productName) {
+  const customer = analysisResult.find(c => c.key === customerKey);
+  if (!customer) return;
+  
+  if (!customer.products.includes(productName)) {
+    customer.products.push(productName);
+    customer.products.sort((a, b) => a.localeCompare(b, 'vi'));
+    
+    const tagsDiv = document.getElementById(`productTags_${customerKey}`);
+    if (tagsDiv) {
+      tagsDiv.innerHTML = customer.products.map(p => `<span class="product-tag">${escapeHtml(p)}</span>`).join('');
+    }
+    
+    refreshSuggestCell(customerKey, customer);
+    updateStatsFromResult();
+    showToast(`Đã thêm "${productName}" cho ${customer.name}`, 'success');
+  }
 }
-function onPhoneBlur(input) { const key=input.dataset.key; const val=input.value.trim(); input.className='ph-inp '+(val?'has':'none'); const row=result.find(r=>r.key===key); if(row && row.phone!==val) { row.phone=val; updateStats(); } }
-function addProduct(input) { const key=input.dataset.key; const val=nrm(input.value); if(!val) return; const row=result.find(r=>r.key===key); if(row && !row.products.find(p=>low(p)===low(val))) { row.products.push(val); row.products.sort(); const tagsDiv=document.getElementById(`tags_${key}`); if(tagsDiv) tagsDiv.innerHTML=row.products.map(p=>`<span class="tag">${esc(p)}</span>`).join(''); refreshSuggestCell(key, row); updateStats(); } input.value=''; }
-function deleteRow(key) { const row=result.find(r=>r.key===key); if(!confirm(`Xóa khách hàng "${row?.name}"?`)) return; result=result.filter(r=>r.key!==key); if(fbConnected && fbDb) fbDb.ref('customers/'+key).remove().catch(e=>lg('r','Lỗi xóa Firebase: '+e.message)); lsSave(); filterRows(); updateStats(); toast('Đã xóa: '+row?.name,'warn'); }
+
+function refreshSuggestCell(customerKey, customer) {
+  const row = document.querySelector(`tr[data-key="${CSS.escape(customerKey)}"]`);
+  if (!row) return;
+  
+  const tds = row.querySelectorAll('td');
+  if (tds.length < 5) return;
+  
+  const tdSuggest = tds[4];
+  const suggestions = getSuggestionsForCustomer(customer);
+  
+  if (suggestions === null) {
+    tdSuggest.innerHTML = '<span class="suggest-no-catalog">— Chưa có danh mục —</span>';
+  } else if (suggestions.length === 0) {
+    tdSuggest.innerHTML = '<span class="suggest-empty">✅ Đã mua tất cả sản phẩm</span>';
+  } else {
+    const dropdownId = `dropdown_${customerKey}`;
+    tdSuggest.innerHTML = `
+      <div class="suggest-trigger" data-dropdown="${dropdownId}" onclick="event.stopPropagation(); toggleSuggestDropdown('${dropdownId}')">
+        💡 Gợi ý <span class="suggest-badge">${suggestions.length}</span> sản phẩm ▼
+      </div>
+      <div id="${dropdownId}" class="suggest-dropdown">
+        <div class="suggest-header">
+          <span>📦 Sản phẩm chưa mua (${suggestions.length})</span>
+          <span style="cursor:pointer" onclick="closeSuggestDropdown('${dropdownId}')">✕</span>
+        </div>
+        <div class="suggest-list" id="suggestList_${dropdownId}"></div>
+      </div>
+    `;
+    
+    const listDiv = document.getElementById(`suggestList_${dropdownId}`);
+    if (listDiv) {
+      listDiv.innerHTML = suggestions.slice(0, 80).map(p => 
+        `<div class="suggest-item" onclick="addSuggestedProduct('${escapeHtml(customerKey)}', '${escapeHtml(p)}'); closeSuggestDropdown('${dropdownId}');">
+          ${escapeHtml(p)}
+        </div>`
+      ).join('');
+    }
+  }
+}
+
+function updatePhone(input) {
+  const customerKey = input.dataset.key;
+  const newPhone = input.value.trim();
+  input.className = 'phone-input ' + (newPhone ? 'has-phone' : 'no-phone');
+  
+  const customer = analysisResult.find(c => c.key === customerKey);
+  if (customer && customer.phone !== newPhone) {
+    customer.phone = newPhone;
+    updateStatsFromResult();
+  }
+}
+
+// addProductToCustomer is defined later with new tag format
+
+function deleteCustomer(customerKey) {
+  const customer = analysisResult.find(c => c.key === customerKey);
+  if (!confirm(`Xóa khách hàng "${customer?.name}"?`)) return;
+  
+  analysisResult = analysisResult.filter(c => c.key !== customerKey);
+  
+  if (isFirebaseConnected && firebaseDb) {
+    firebaseDb.ref('customers/' + customerKey).remove().catch(e => addLog('error', 'Lỗi xóa Firebase: ' + e.message));
+  }
+  
+  saveToLocalStorage();
+  filterTable();
+  updateStatsFromResult();
+  showToast('Đã xóa: ' + customer?.name, 'warning');
+}
+
+// Click on customer name → delete entire row
+function deleteCustomerByClick(customerKey) {
+  const customer = analysisResult.find(c => c.key === customerKey);
+  if (!customer) return;
+  if (!confirm(`⚠️ Xóa toàn bộ dữ liệu khách hàng:\n"${customer.name}"?\n\nHành động này không thể hoàn tác.`)) return;
+  
+  analysisResult = analysisResult.filter(c => c.key !== customerKey);
+  delete period2Products[customerKey];
+  
+  if (isFirebaseConnected && firebaseDb) {
+    firebaseDb.ref('customers/' + customerKey).remove().catch(e => addLog('error', 'Lỗi xóa Firebase: ' + e.message));
+  }
+  
+  saveToLocalStorage();
+  filterTable();
+  updateStatsFromResult();
+  showToast('Đã xóa khách hàng: ' + customer.name, 'warning');
+}
+
+// Click on product tag → show floating confirm panel
+function requestTagDelete(customerKey, productName, tagEl) {
+  _pendingDelKey = customerKey;
+  _pendingDelProduct = productName;
+  
+  const customer = analysisResult.find(c => c.key === customerKey);
+  document.getElementById('panelProductName').textContent = productName;
+  document.getElementById('panelCustomerName').textContent = customer ? customer.name : customerKey;
+  
+  // Mark tag as selected
+  document.querySelectorAll('.product-tag.selected').forEach(t => t.classList.remove('selected'));
+  tagEl.classList.add('selected');
+  
+  document.getElementById('tagDeletePanel').classList.add('show');
+}
+
+function cancelTagDelete() {
+  _pendingDelKey = null;
+  _pendingDelProduct = null;
+  document.querySelectorAll('.product-tag.selected').forEach(t => t.classList.remove('selected'));
+  document.getElementById('tagDeletePanel').classList.remove('show');
+}
+
+function confirmTagDelete() {
+  if (!_pendingDelKey || !_pendingDelProduct) return;
+  deleteProductFromCustomer(_pendingDelKey, _pendingDelProduct);
+  document.getElementById('tagDeletePanel').classList.remove('show');
+  _pendingDelKey = null;
+  _pendingDelProduct = null;
+}
+
+function deleteProductFromCustomer(customerKey, productName) {
+  const customer = analysisResult.find(c => c.key === customerKey);
+  if (!customer) return;
+  
+  const before = customer.products.length;
+  customer.products = customer.products.filter(p => p !== productName);
+  
+  if (customer.products.length === before) return; // nothing changed
+  
+  // Re-render product tags for this customer
+  const tagsDiv = document.getElementById(`productTags_${customerKey}`);
+  if (tagsDiv) {
+    const html = customer.products.map(p => 
+      `<span class="product-tag" onclick="requestTagDelete('${escapeHtml(customerKey)}','${escapeHtml(p.replace(/'/g,"&#39;"))}',this)" title="Nhấp để xóa sản phẩm này">
+        ${escapeHtml(p)}<button class="tag-del-btn" tabindex="-1">✕</button>
+       </span>`
+    ).join('') || '<span style="color:var(--text-muted);">—</span>';
+    tagsDiv.innerHTML = html;
+  }
+  
+  refreshSuggestCell(customerKey, customer);
+  updateStatsFromResult();
+  showToast(`Đã xóa "${productName}" khỏi ${customer.name}`, 'warning');
+  addLog('warning', `🗑️ Đã xóa SP "${productName}" khỏi ${customer.name}`);
+}
+
+function filterTable() {
+  const searchTerm = toLower(document.getElementById('searchInput').value);
+  if (!searchTerm) {
+    renderTable(analysisResult);
+    return;
+  }
+  
+  const filtered = analysisResult.filter(c => 
+    toLower(c.name).includes(searchTerm) ||
+    (c.products || []).some(p => toLower(p).includes(searchTerm)) ||
+    (c.phone || '').includes(searchTerm)
+  );
+  renderTable(filtered);
+}
+
+// ==================== STATISTICS ====================
+function updateStats(customers, products, phones, records) {
+  document.getElementById('statCustomers').textContent = customers;
+  document.getElementById('statProducts').textContent = products;
+  document.getElementById('statPhones').textContent = phones;
+  document.getElementById('statRecords').textContent = records;
+}
+
+function updateStatsFromResult() {
+  const allProducts = new Set(analysisResult.flatMap(c => c.products || []));
+  const phonesCount = analysisResult.filter(c => c.phone).length;
+  updateStats(analysisResult.length, allProducts.size, phonesCount, document.getElementById('statRecords').textContent);
+}
 
 // ==================== SAVE & LOAD ====================
-function saveData() { 
-  if(!result.length){ toast('Chưa có dữ liệu','warn'); return; } 
-  lsSave(); 
-  if(fbConnected && fbDb) { 
-    const obj={}; result.forEach(r=>{ obj[r.key]={key:r.key,name:r.name,phone:r.phone||'',products:r.products||[]}; }); 
-    document.getElementById('ldTxt').textContent='Đang lưu Firebase...'; document.getElementById('ld').classList.add('on'); 
-    fbDb.ref('customers').set(obj).then(()=>{ document.getElementById('ld').classList.remove('on'); lg('g',`☁️ Đã lưu ${result.length} KH lên Firebase`); toast(`Lưu ${result.length} khách hàng thành công`,'ok'); }).catch(e=>{ document.getElementById('ld').classList.remove('on'); toast('Firebase lỗi, đã lưu Local','warn'); }); 
-  } else toast('Firebase offline, đã lưu LocalStorage','warn'); 
+function saveData() {
+  if (!analysisResult.length) {
+    showToast('Chưa có dữ liệu để lưu', 'warning');
+    return;
+  }
+  
+  saveToLocalStorage();
+  
+  if (isFirebaseConnected && firebaseDb) {
+    showLoading('Đang lưu lên Firebase...');
+    const dataObj = {};
+    analysisResult.forEach(c => {
+      dataObj[c.key] = {
+        key: c.key,
+        name: c.name,
+        phone: c.phone || '',
+        products: c.products || []
+      };
+    });
+    
+    firebaseDb.ref('customers').set(dataObj).then(() => {
+      hideLoading();
+      addLog('success', `☁️ Đã lưu ${analysisResult.length} KH lên Firebase`);
+      showToast(`Lưu ${analysisResult.length} khách hàng thành công`, 'success');
+    }).catch(e => {
+      hideLoading();
+      addLog('error', 'Firebase lỗi: ' + e.message);
+      showToast('Firebase lỗi, đã lưu LocalStorage', 'warning');
+    });
+  } else {
+    showToast('Firebase offline, đã lưu LocalStorage', 'warning');
+  }
 }
 
-function loadData() { 
-  if(fbConnected && fbDb) { 
-    document.getElementById('ldTxt').textContent='Tải từ Firebase...'; document.getElementById('ld').classList.add('on'); 
-    fbDb.ref('customers').get().then(snap=>{ document.getElementById('ld').classList.remove('on'); if(!snap.exists()) loadFromLS(); else applyLoadedData(Object.values(snap.val())); }).catch(()=>loadFromLS()); 
-  } else loadFromLS(); 
+function loadData() {
+  if (isFirebaseConnected && firebaseDb) {
+    showLoading('Đang tải từ Firebase...');
+    firebaseDb.ref('customers').get().then(snap => {
+      hideLoading();
+      if (!snap.exists()) {
+        loadFromLocalStorage();
+      } else {
+        const data = Object.values(snap.val());
+        applyLoadedData(data);
+        addLog('success', `☁️ Đã tải ${data.length} KH từ Firebase`);
+        showToast(`Đã tải ${data.length} khách hàng từ Firebase`, 'success');
+      }
+    }).catch(() => {
+      hideLoading();
+      loadFromLocalStorage();
+    });
+  } else {
+    loadFromLocalStorage();
+  }
 }
 
-function loadFromLS() { 
-  try { const raw=localStorage.getItem(LS_KEY); if(!raw){ toast('Chưa có dữ liệu lưu','warn'); return; } applyLoadedData(JSON.parse(raw)); } catch(e){ toast('Lỗi đọc LocalStorage','err'); } 
+function loadFromLocalStorage() {
+  try {
+    const saved = localStorage.getItem(LS_KEY);
+    if (!saved) {
+      showToast('Chưa có dữ liệu lưu', 'warning');
+      return;
+    }
+    const data = JSON.parse(saved);
+    applyLoadedData(data);
+    addLog('info', `💾 Đã tải ${data.length} KH từ LocalStorage`);
+    showToast(`Đã tải ${data.length} khách hàng từ LocalStorage`, 'success');
+  } catch(e) {
+    showToast('Lỗi đọc LocalStorage', 'error');
+  }
 }
 
-function applyLoadedData(data) { 
-  result=data.sort((a,b)=>a.name.localeCompare(b.name,'vi')); 
-  const allProds=new Set(result.flatMap(r=>r.products||[])); 
-  setStats(result.length, allProds.size, result.filter(r=>r.phone).length, '—'); 
-  renderTable(result); 
-  ['tbox','stats','sw'].forEach(id=>document.getElementById(id).classList.add('on')); 
-  document.getElementById('btnExport').classList.remove('hidden'); 
-  document.getElementById('btnSave').style.display='inline-flex'; 
+function applyLoadedData(data) {
+  analysisResult = data.sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+  const allProducts = new Set(analysisResult.flatMap(c => c.products || []));
+  updateStats(analysisResult.length, allProducts.size, analysisResult.filter(c => c.phone).length, '—');
+  renderTable(analysisResult);
+  
+  document.getElementById('statsGrid').classList.add('show');
+  document.getElementById('searchBox').classList.add('show');
+  document.getElementById('tableContainer').classList.add('show');
+  document.getElementById('btnSave').style.display = 'inline-flex';
+  document.getElementById('btnExport').style.display = 'inline-flex';
 }
 
-function lsSave() { localStorage.setItem(LS_KEY, JSON.stringify(result)); document.getElementById('lsPill').style.display='inline-flex'; document.getElementById('lsTxt').textContent=`LocalStorage: ${result.length} KH đã lưu`; }
-function setStats(kh,sp,ph,rc) { document.getElementById('stKH').textContent=kh; document.getElementById('stSP').textContent=sp; document.getElementById('stPH').textContent=ph; document.getElementById('stRC').textContent=rc; }
-function updateStats() { const allProds=new Set(result.flatMap(r=>r.products||[])); setStats(result.length, allProds.size, result.filter(r=>r.phone).length, document.getElementById('stRC').textContent); }
-function filterRows() { const q=low(document.getElementById('srch').value.trim()); if(!q) { renderTable(result); return; } const filtered=result.filter(r=> low(r.name).includes(q) || (r.products||[]).some(p=>low(p).includes(q)) || (r.phone||'').includes(q) ); renderTable(filtered); }
+function saveToLocalStorage() {
+  localStorage.setItem(LS_KEY, JSON.stringify(analysisResult));
+}
+
+function loadCustomersFromFirebase() {
+  if (!isFirebaseConnected || !firebaseDb) return;
+  
+  firebaseDb.ref('customers').get().then(snap => {
+    if (snap.exists()) {
+      const data = Object.values(snap.val());
+      if (data.length > 0) {
+        applyLoadedData(data);
+        addLog('success', `☁️ Tự động tải ${data.length} KH từ Firebase`);
+        showToast(`Đã tải ${data.length} khách hàng từ Firebase`, 'success');
+      }
+    }
+  }).catch(e => addLog('warning', 'Không thể tải KH từ Firebase: ' + e.message));
+}
 
 // ==================== EXPORT EXCEL ====================
-function doExport() { 
-  if(!result.length){ toast('Chưa có dữ liệu','warn'); return; } 
-  const aoa=[['STT','Tên Khách Hàng','Số Điện Thoại','Sản Phẩm','Số SP','Gợi Ý Đa Dạng','Số SP Gợi Ý']]; 
-  result.forEach((r,i)=>{ const suggestions=getSuggestionsForRow(r); aoa.push([i+1, r.name, r.phone||'', (r.products||[]).join(', '), (r.products||[]).length, suggestions? suggestions.join(', '):'', suggestions?suggestions.length:'']); }); 
-  const ws=XLSX.utils.aoa_to_sheet(aoa); ws['!cols']=[{wch:5},{wch:52},{wch:16},{wch:110},{wch:8},{wch:110},{wch:12}]; 
-  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Khach-Hang'); 
-  const statsAoa=[['Thống Kê Tổng Hợp'],[''],['Tổng khách hàng',result.length],['Có số điện thoại',result.filter(r=>r.phone).length],['Chưa có SĐT',result.filter(r=>!r.phone).length],['Tổng sản phẩm unique',new Set(result.flatMap(r=>r.products||[])).size],['Ngày xuất',new Date().toLocaleDateString('vi-VN')]]; 
-  const ws2=XLSX.utils.aoa_to_sheet(statsAoa); ws2['!cols']=[{wch:30},{wch:20}]; XLSX.utils.book_append_sheet(wb,ws2,'Thong-Ke'); 
-  XLSX.writeFile(wb,`khach-hang-${new Date().toISOString().slice(0,10)}.xlsx`); toast('Xuất Excel thành công!','ok'); 
+function exportToExcel() {
+  if (!analysisResult.length) {
+    showToast('Chưa có dữ liệu để xuất', 'warning');
+    return;
+  }
+  
+  const excelData = [
+    ['STT', 'Tên Khách Hàng', 'Số Điện Thoại', 'Sản Phẩm Đã Mua', 'Số SP', 'Gợi Ý Sản Phẩm', 'Số SP Gợi Ý']
+  ];
+  
+  analysisResult.forEach((c, i) => {
+    const suggestions = getSuggestionsForCustomer(c);
+    excelData.push([
+      i + 1,
+      c.name,
+      c.phone || '',
+      (c.products || []).join(', '),
+      (c.products || []).length,
+      suggestions ? suggestions.join(', ') : '',
+      suggestions ? suggestions.length : ''
+    ]);
+  });
+  
+  const ws = XLSX.utils.aoa_to_sheet(excelData);
+  ws['!cols'] = [{wch:5}, {wch:55}, {wch:16}, {wch:120}, {wch:8}, {wch:120}, {wch:10}];
+  
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'KhachHang');
+  
+  // Stats sheet
+  const statsData = [
+    ['THỐNG KÊ TỔNG HỢP'],
+    [''],
+    ['Tổng khách hàng', analysisResult.length],
+    ['Có số điện thoại', analysisResult.filter(c => c.phone).length],
+    ['Chưa có SĐT', analysisResult.filter(c => !c.phone).length],
+    ['Tổng sản phẩm unique', new Set(analysisResult.flatMap(c => c.products || [])).size],
+    ['Ngày xuất', new Date().toLocaleDateString('vi-VN')]
+  ];
+  
+  const wsStats = XLSX.utils.aoa_to_sheet(statsData);
+  wsStats['!cols'] = [{wch:30}, {wch:20}];
+  XLSX.utils.book_append_sheet(wb, wsStats, 'ThongKe');
+  
+  XLSX.writeFile(wb, `khach-hang-${new Date().toISOString().slice(0,10)}.xlsx`);
+  showToast('Xuất Excel thành công!', 'success');
 }
 
-function toast(msg,type='ok') { const icons={ok:'✅',err:'❌',warn:'⚠️'}; const container=document.getElementById('toastContainer'); const el=document.createElement('div'); el.className=`toast-item ${type}`; el.innerHTML=`<span>${icons[type]}</span><span>${esc(msg)}</span>`; container.appendChild(el); setTimeout(()=>{ el.style.opacity='0'; setTimeout(()=>el.remove(),400); },3500); }
+// ==================== DELETE ALL DATA ====================
+function showDeleteConfirm() {
+  const overlay = document.createElement('div');
+  overlay.className = 'password-overlay';
+  overlay.innerHTML = `
+    <div class="password-dialog">
+      <h3>⚠️ XÓA TOÀN BỘ DỮ LIỆU</h3>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Hành động này sẽ xóa tất cả khách hàng và danh mục trên Firebase + LocalStorage</p>
+      <input type="password" id="deletePassword" placeholder="Nhập mật khẩu" autocomplete="off">
+      <div>
+        <button class="btn-cancel" onclick="this.closest('.password-overlay').remove()">Hủy</button>
+        <button class="btn-confirm" onclick="confirmDeleteAll(this)">Xác nhận xóa</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#deletePassword').focus();
+}
 
-window.addEventListener('load',()=>{ initCatalog(); try { const raw=localStorage.getItem(LS_KEY); if(raw) { const data=JSON.parse(raw); document.getElementById('lsPill').style.display='inline-flex'; document.getElementById('lsTxt').textContent=`LocalStorage: ${data.length} KH đã lưu`; } } catch(e){} });
+function confirmDeleteAll(btn) {
+  const overlay = btn.closest('.password-overlay');
+  const passwordInput = overlay.querySelector('#deletePassword');
+  
+  if (passwordInput.value !== DELETE_PASSWORD) {
+    showToast('Mật khẩu không đúng!', 'error');
+    passwordInput.value = '';
+    passwordInput.focus();
+    return;
+  }
+  
+  overlay.remove();
+  performDeleteAll();
+}
+
+function performDeleteAll() {
+  showLoading('Đang xóa dữ liệu...');
+  
+  const promises = [];
+  if (isFirebaseConnected && firebaseDb) {
+    promises.push(firebaseDb.ref('customers').remove().catch(e => addLog('error', 'Lỗi xóa customers: ' + e.message)));
+    promises.push(firebaseDb.ref(CATALOG_FIREBASE_KEY).remove().catch(e => addLog('error', 'Lỗi xóa catalog: ' + e.message)));
+  }
+  
+  Promise.all(promises).then(() => {
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(CATALOG_KEY);
+    
+    analysisResult = [];
+    catalogProducts = [];
+    exportData = null;
+    customerData = null;
+    compareData = null;
+    period2Products = {};
+    
+    // Reset UI
+    document.getElementById('cardExport').classList.remove('loaded');
+    document.getElementById('cardCustomer').classList.remove('loaded');
+    document.getElementById('cardFile3').classList.remove('loaded');
+    document.getElementById('fileExportOk').classList.remove('show');
+    document.getElementById('fileCustomerOk').classList.remove('show');
+    document.getElementById('fileCompareOk').classList.remove('show');
+    document.getElementById('btnAnalyze').disabled = true;
+    document.getElementById('btnAnalyze2').disabled = true;
+    document.getElementById('btnAnalyze2').style.display = 'none';
+    document.getElementById('btnSave').style.display = 'none';
+    document.getElementById('btnExport').style.display = 'none';
+    document.getElementById('catalogClearWrap').classList.remove('show');
+    document.getElementById('statsGrid').classList.remove('show');
+    document.getElementById('searchBox').classList.remove('show');
+    document.getElementById('tableContainer').classList.remove('show');
+    
+    updateCatalogUI();
+    renderTable([]);
+    updateStats(0, 0, 0, 0);
+    
+    hideLoading();
+    showToast('Đã xóa toàn bộ dữ liệu!', 'success');
+    addLog('error', '🗑️ Đã xóa toàn bộ dữ liệu (Firebase + LocalStorage)');
+  }).catch(e => {
+    hideLoading();
+    showToast('Lỗi khi xóa: ' + e.message, 'error');
+  });
+}
+
+// ==================== UI HELPERS ====================
+function showLoading(text) {
+  document.getElementById('loadingText').textContent = text || 'Đang xử lý...';
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  
+  const icons = { success: '✅', error: '❌', warning: '⚠️' };
+  toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span>${escapeHtml(message)}</span>`;
+  
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 400);
+  }, 3500);
+}
+
+// ==================== EVENT LISTENERS SETUP ====================
+// File upload setups (FILE 01 & 02)
+setupFileUpload('dropzoneExport', 'fileExport', 'fileExportOk', 'exportFileName', 'cardExport', (rows, name) => {
+  exportData = rows;
+  addLog('info', `📂 File xuất kho: ${name} - ${rows.length - 1} bản ghi`);
+});
+
+setupFileUpload('dropzoneCustomer', 'fileCustomer', 'fileCustomerOk', 'customerFileName', 'cardCustomer', (rows, name) => {
+  customerData = rows;
+  addLog('info', `📂 File danh sách KH: ${name} - ${rows.length - 1} bản ghi`);
+});
+
+// Catalog file upload
+const catalogDropzone = document.getElementById('catalogDropzone');
+const catalogInput = document.getElementById('fileCatalog');
+
+catalogDropzone.addEventListener('dragover', e => {
+  e.preventDefault();
+  catalogDropzone.style.borderColor = 'var(--primary)';
+});
+
+catalogDropzone.addEventListener('dragleave', () => {
+  catalogDropzone.style.borderColor = 'rgba(217,119,6,0.35)';
+});
+
+catalogDropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  catalogDropzone.style.borderColor = 'rgba(217,119,6,0.35)';
+  if (e.dataTransfer.files[0]) readCatalogFile(e.dataTransfer.files[0]);
+});
+
+catalogInput.addEventListener('change', () => {
+  if (catalogInput.files[0]) readCatalogFile(catalogInput.files[0]);
+});
+
+// ==================== FILE 03 UPLOAD ====================
+function clearCompareFile() {
+  compareData = null;
+  period2Products = {};
+  document.getElementById('fileCompareOk').classList.remove('show');
+  document.getElementById('cardFile3').classList.remove('loaded');
+  document.getElementById('compareFileName').textContent = '';
+  document.getElementById('fileCompare').value = '';
+  document.getElementById('btnAnalyze2').style.display = 'none';
+  document.getElementById('btnAnalyze2').disabled = true;
+  // Re-render to clear period 2 suggestions
+  if (analysisResult.length > 0) renderTable(analysisResult);
+  showToast('Đã xóa file kỳ 2. Upload lại để so sánh.', 'warning');
+}
+
+const dropzone3 = document.getElementById('dropzoneFile3');
+const fileInput3 = document.getElementById('fileCompare');
+
+dropzone3.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropzone3.style.borderColor = '#0ea5e9';
+  dropzone3.style.background = '#e0f2fe';
+});
+
+dropzone3.addEventListener('dragleave', () => {
+  dropzone3.style.borderColor = 'rgba(14,165,233,0.35)';
+  dropzone3.style.background = 'rgba(255,255,255,0.6)';
+});
+
+dropzone3.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone3.style.borderColor = 'rgba(14,165,233,0.35)';
+  dropzone3.style.background = 'rgba(255,255,255,0.6)';
+  if (e.dataTransfer.files[0]) processCompareFile(e.dataTransfer.files[0]);
+});
+
+fileInput3.addEventListener('change', () => {
+  if (fileInput3.files[0]) processCompareFile(fileInput3.files[0]);
+});
+
+function processCompareFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const workbook = XLSX.read(e.target.result, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false });
+      
+      compareData = rows;
+      
+      document.getElementById('fileCompareOk').classList.add('show');
+      document.getElementById('compareFileName').textContent = `${file.name} · ${rows.length - 1} dòng`;
+      document.getElementById('cardFile3').classList.add('loaded');
+      
+      // Show Analyze 2 button only if Analysis 1 is done
+      if (analysisResult.length > 0) {
+        document.getElementById('btnAnalyze2').style.display = 'inline-flex';
+        document.getElementById('btnAnalyze2').disabled = false;
+      } else {
+        document.getElementById('btnAnalyze2').style.display = 'inline-flex';
+        document.getElementById('btnAnalyze2').disabled = true;
+        showToast('Upload xong! Hãy chạy Phân Tích Lần 1 trước rồi mới Phân Tích Lần 2.', 'warning');
+      }
+      
+      addLog('info', `📊 File kỳ 2: ${file.name} - ${rows.length - 1} bản ghi`);
+      showToast(`Đã tải file kỳ 2: ${rows.length - 1} dòng`, 'success');
+    } catch(err) {
+      showToast('Lỗi đọc file kỳ 2: ' + err.message, 'error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ==================== ENHANCED CUSTOMER NAME MATCHING ====================
+// Remove common business prefixes for cleaner comparison
+function normalizeCompanyName(raw) {
+  return toLower(raw)
+    .replace(/\b(công ty|cty|tnhh|cổ phần|cp|nhà thuốc|nha thuoc|pharmacies|pharmacy|chi nhánh|cn|tổng kho|tk|đại lý|dl|siêu thị|st)\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Find best matching customer from analysisResult for a given raw name.
+ * Uses: 1) exact normalized match, 2) contains match, 3) Jaro-Winkler
+ * Returns: { customer, score } or null
+ */
+function findBestCustomerMatch(rawName, threshold) {
+  const norm = normalizeCompanyName(rawName);
+  if (!norm || norm.length < 2) return null;
+  
+  let bestMatch = null;
+  let bestScore = 0;
+  
+  for (const c of analysisResult) {
+    const cNorm = normalizeCompanyName(c.name);
+    
+    // 1. Exact match (after normalization)
+    if (norm === cNorm) return { customer: c, score: 100 };
+    
+    // 2. Contains match: one name is a substring of the other
+    // e.g. "pharmacity" ⊂ "pharmacity huyền" → same company
+    if (norm.length >= 3 && cNorm.length >= 3) {
+      if (cNorm.startsWith(norm) || norm.startsWith(cNorm)) {
+        const score = 95;
+        if (score > bestScore) {
+          bestScore = score;
+          bestMatch = { customer: c, score };
+        }
+        continue;
+      }
+      // Broader contains check
+      if (cNorm.includes(norm) || norm.includes(cNorm)) {
+        const ratio = Math.min(norm.length, cNorm.length) / Math.max(norm.length, cNorm.length);
+        if (ratio > 0.5) {
+          const score = Math.round(85 * ratio);
+          if (score > bestScore) {
+            bestScore = score;
+            bestMatch = { customer: c, score };
+          }
+          continue;
+        }
+      }
+    }
+    
+    // 3. Jaro-Winkler on normalized names
+    const score = jaroWinkler(norm, cNorm);
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = { customer: c, score };
+    }
+  }
+  
+  if (bestMatch && bestScore >= threshold) return bestMatch;
+  return null;
+}
+
+// ==================== ANALYSIS 2 ====================
+function runAnalysis2() {
+  if (!compareData || !analysisResult.length) {
+    showToast('Cần có dữ liệu Phân Tích Lần 1 và file kỳ 2 trước', 'warning');
+    return;
+  }
+  
+  showLoading('Đang phân tích dữ liệu kỳ 2...');
+  
+  setTimeout(() => {
+    try {
+      const threshold = parseInt(document.getElementById('thresholdSlider').value);
+      
+      // Parse FILE 03 like FILE 01 (xuất kho format)
+      let headerIndex = 0;
+      for (let i = 0; i < Math.min(8, compareData.length); i++) {
+        if (compareData[i] && compareData[i].some(c => toLower(String(c)).includes('khách'))) {
+          headerIndex = i;
+          break;
+        }
+      }
+      
+      const headerRow = compareData[headerIndex].map(c => normalize(String(c)));
+      let customerCol = headerRow.findIndex(c => toLower(c).includes('khách'));
+      let productCol  = headerRow.findIndex(c => toLower(c).includes('sản phẩm') || toLower(c).includes('product'));
+      
+      if (customerCol < 0) customerCol = 3;
+      if (productCol  < 0) productCol  = 5;
+      
+      // Build customer → products map from FILE 03
+      const file3Map = new Map(); // normalizedKey → { display, products: Set }
+      
+      for (let i = headerIndex + 1; i < compareData.length; i++) {
+        const row = compareData[i];
+        if (!row || row.length === 0) continue;
+        
+        const custRaw = normalize(String(row[customerCol] || ''));
+        const prodRaw = normalize(String(row[productCol]  || ''));
+        if (!custRaw || /^(tổng|total|khách hàng|nan)$/i.test(toLower(custRaw))) continue;
+        
+        const normKey = normalizeCompanyName(custRaw);
+        if (!file3Map.has(normKey)) {
+          file3Map.set(normKey, { display: custRaw, products: new Set() });
+        }
+        const prod = extractProductName(prodRaw);
+        if (prod) file3Map.get(normKey).products.add(prod);
+      }
+      
+      // Reset period2Products
+      period2Products = {};
+      
+      let matchCount = 0;
+      let newProdCount = 0;
+      let unmatchedCount = 0;
+      const unmatchedNames = [];
+      
+      for (const [normKey, data3] of file3Map) {
+        const match = findBestCustomerMatch(data3.display, threshold);
+        
+        if (!match) {
+          unmatchedCount++;
+          unmatchedNames.push(data3.display);
+          continue;
+        }
+        
+        matchCount++;
+        const customer = match.customer;
+        const owned1 = new Set((customer.products || []).map(p => toLower(p)));
+        
+        // Products in FILE 03 NOT in Analysis 1 for this customer
+        const newProds = [...data3.products].filter(p => !owned1.has(toLower(p)));
+        
+        if (newProds.length > 0) {
+          period2Products[customer.key] = newProds.sort((a, b) => a.localeCompare(b, 'vi'));
+          newProdCount += newProds.length;
+        }
+      }
+      
+      // Enable Analyze 2 button after first run
+      document.getElementById('btnAnalyze2').disabled = false;
+      
+      renderTable(analysisResult);
+      hideLoading();
+      
+      const msg = `✅ Phân tích kỳ 2 xong: ${matchCount} KH khớp, ${newProdCount} SP mới cần tương tác` +
+                  (unmatchedCount > 0 ? `, ${unmatchedCount} KH kỳ 2 chưa tìm thấy` : '');
+      
+      showToast(msg, 'success');
+      addLog('success', `🔍 ${msg}`);
+      
+      if (unmatchedCount > 0 && unmatchedNames.length > 0) {
+        addLog('warning', `⚠️ KH kỳ 2 chưa khớp: ${unmatchedNames.slice(0, 5).join(', ')}${unmatchedNames.length > 5 ? '...' : ''}`);
+      }
+      
+    } catch(e) {
+      hideLoading();
+      addLog('error', '❌ Lỗi phân tích kỳ 2: ' + e.message);
+      showToast('Lỗi phân tích kỳ 2: ' + e.message, 'error');
+    }
+  }, 50);
+}
+
+// ==================== UPDATE addProductToCustomer to use new tag format ====================
+function addProductToCustomer(input) {
+  const customerKey = input.dataset.key;
+  const productName = normalize(input.value);
+  if (!productName) return;
+  
+  const customer = analysisResult.find(c => c.key === customerKey);
+  if (customer && !customer.products.find(p => toLower(p) === toLower(productName))) {
+    customer.products.push(productName);
+    customer.products.sort((a, b) => a.localeCompare(b, 'vi'));
+    
+    const tagsDiv = document.getElementById(`productTags_${customerKey}`);
+    if (tagsDiv) {
+      tagsDiv.innerHTML = customer.products.map(p => 
+        `<span class="product-tag" onclick="requestTagDelete('${escapeHtml(customerKey)}','${escapeHtml(p.replace(/'/g,"&#39;"))}',this)" title="Nhấp để xóa sản phẩm này">
+          ${escapeHtml(p)}<button class="tag-del-btn" tabindex="-1">✕</button>
+         </span>`
+      ).join('');
+    }
+    
+    refreshSuggestCell(customerKey, customer);
+    updateStatsFromResult();
+    showToast(`Đã thêm "${productName}" cho ${customer.name}`, 'success');
+  }
+  input.value = '';
+}
+
+// Initialize
+initFirebase();
+
+// After Analysis 1 completes, if FILE 03 is loaded, enable Analyze 2 btn
+const _origRunAnalysis = runAnalysis;
+
+// Make functions global for inline event handlers
+window.toggleSuggestDropdown = toggleSuggestDropdown;
+window.closeSuggestDropdown = closeSuggestDropdown;
+window.addSuggestedProduct = addSuggestedProduct;
+window.updatePhone = updatePhone;
+window.addProductToCustomer = addProductToCustomer;
+window.deleteCustomer = deleteCustomer;
+window.deleteCustomerByClick = deleteCustomerByClick;
+window.requestTagDelete = requestTagDelete;
+window.cancelTagDelete = cancelTagDelete;
+window.confirmTagDelete = confirmTagDelete;
+window.clearCatalogFile = clearCatalogFile;
+window.clearCompareFile = clearCompareFile;
+
+// Hide tag-delete panel when clicking elsewhere
+document.addEventListener('click', (e) => {
+  const panel = document.getElementById('tagDeletePanel');
+  if (panel && panel.classList.contains('show')) {
+    if (!panel.contains(e.target) && !e.target.closest('.product-tag')) {
+      cancelTagDelete();
+    }
+  }
+});
+
+// Hook analysis completion to enable Analyze 2 if FILE 03 exists
+document.getElementById('btnAnalyze').addEventListener('click', function() {
+  runAnalysis();
+  // After analysis, if compareData already loaded, enable Analyze 2
+  setTimeout(() => {
+    if (compareData && analysisResult.length > 0) {
+      document.getElementById('btnAnalyze2').style.display = 'inline-flex';
+      document.getElementById('btnAnalyze2').disabled = false;
+    }
+  }, 2000);
+});
+
+document.getElementById('btnAnalyze2').addEventListener('click', runAnalysis2);
+document.getElementById('btnSave').addEventListener('click', saveData);
+document.getElementById('btnLoad').addEventListener('click', loadData);
+document.getElementById('btnExport').addEventListener('click', exportToExcel);
+document.getElementById('btnDeleteAll').addEventListener('click', showDeleteConfirm);
+document.getElementById('saveCatalogBtn').addEventListener('click', saveCatalogToFirebase);
+document.getElementById('searchInput').addEventListener('input', filterTable);
+document.getElementById('thresholdSlider').addEventListener('input', (e) => {
+  document.getElementById('thresholdValue').textContent = e.target.value + '%';
+});
 </script>
 </body>
 </html>
