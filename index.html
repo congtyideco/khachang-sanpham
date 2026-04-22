@@ -1169,6 +1169,81 @@ td {
   margin-left: auto;
 }
 
+/* === FILE 03 BIG PREVIEW PANEL === */
+.file3-preview {
+  display: none;
+  margin-top: 14px;
+  padding: 16px;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid rgba(14,165,233,0.25);
+}
+.file3-preview.show { display: block; }
+.file3-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.file3-preview-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0369a1;
+}
+.file3-stats {
+  display: flex;
+  gap: 8px;
+  font-size: 11.5px;
+  flex-wrap: wrap;
+}
+.file3-stats .stat-badge {
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+}
+.file3-stats .stat-badge.cust { background: var(--primary-light); color: var(--primary); }
+.file3-stats .stat-badge.prod { background: #e0f2fe; color: #0369a1; }
+.file3-stats .stat-badge.cols { background: var(--warning-light); color: #92400e; }
+
+.file3-product-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  max-height: 140px;
+  overflow-y: auto;
+  padding: 8px;
+  background: var(--surface-hover);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+.file3-product-list .product-sample {
+  font-size: 10.5px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: #e0f2fe;
+  border: 1px solid rgba(14,165,233,0.3);
+  color: #0369a1;
+  font-family: 'JetBrains Mono', monospace;
+}
+.file3-toggle {
+  font-size: 11px;
+  color: #0ea5e9;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+}
+.file3-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
 /* === PHÂN TÍCH 2 BTN === */
 .btn-analyze2 {
   background: linear-gradient(135deg, #0ea5e9, #0284c7);
@@ -1259,7 +1334,7 @@ td {
 <div class="container">
   <div class="header">
     <div class="header-badge">
-      <span>✨</span> IDECO AI ANALYTICS
+      <span>✨</span> IDECO AI ANALYTICS · v2.4
     </div>
     <h1>PHÂN TÍCH KHÁCH HÀNG ĐÃ HỢP TÁC SẢN PHẨM</h1>
     <p class="header-sub">Upload file xuất kho + danh sách khách hàng · Tự động trích xuất sản phẩm · Gợi ý thông minh</p>
@@ -1268,6 +1343,7 @@ td {
         <span class="fb-dot pulse"></span>
         <span id="fbText">Đang kết nối Firebase...</span>
       </div>
+      <button id="fbRetryBtn" onclick="retryFirebaseConnection()" style="display:none;background:var(--warning-light);border:1px solid rgba(217,119,6,0.3);color:var(--warning);border-radius:100px;padding:4px 14px;font-size:11px;cursor:pointer;font-weight:600;font-family:'JetBrains Mono',monospace;">🔄 Kết nối lại</button>
     </div>
   </div>
 
@@ -1325,18 +1401,34 @@ td {
   <div class="upload-grid-3">
     <div class="upload-card-3" id="cardFile3">
       <div class="upload-card-tag" style="color:#0ea5e9;">📁 FILE 03 · TÙY CHỌN</div>
-      <div class="upload-card-title" style="color:#0369a1;">🔄 Dữ liệu xuất kho kỳ 2 (so sánh)</div>
+      <div class="upload-card-title" style="color:#0369a1;">🔄 Dữ liệu bán hàng KỲ NÀY (để so sánh với kỳ trước)</div>
       <div class="dropzone-3" id="dropzoneFile3">
         <input type="file" id="fileCompare" accept=".xlsx,.xls">
         <div class="dropzone-icon" style="font-size:28px;margin-bottom:8px;">📊</div>
         <div class="dropzone-text" style="font-size:13px;color:#475569;">
           <strong style="color:#0ea5e9;">Nhấn hoặc kéo thả</strong><br>
-          File xuất kho kỳ 2 để so sánh với dữ liệu phân tích đầu
+          File xuất kho <strong>kỳ này</strong> · App sẽ tìm SP khách đã mua kỳ trước nhưng kỳ này BỎ → gợi ý bán lại
         </div>
       </div>
       <div class="file-ok-3" id="fileCompareOk">
         ✅ <span id="compareFileName" style="flex:1;font-family:monospace;font-size:11px;"></span>
         <button class="btn-del-file3" onclick="clearCompareFile()">🗑️ Xóa</button>
+      </div>
+      
+      <!-- BIG VISIBLE PREVIEW OF WHAT WAS EXTRACTED -->
+      <div class="file3-preview" id="file3Preview">
+        <div class="file3-preview-header">
+          <div class="file3-preview-title">📊 Đã trích xuất từ File 03</div>
+          <div class="file3-stats">
+            <span class="stat-badge cust" id="file3CustCount">0 KH</span>
+            <span class="stat-badge prod" id="file3ProdCount">0 SP</span>
+            <span class="stat-badge cols" id="file3ColInfo">cột ?</span>
+          </div>
+        </div>
+        <div class="file3-section-label">📦 Danh sách sản phẩm trong file 3:</div>
+        <div class="file3-product-list" id="file3ProductList"></div>
+        <div class="file3-section-label">👥 Danh sách khách hàng trong file 3:</div>
+        <div class="file3-product-list" id="file3CustomerList" style="max-height:100px;"></div>
       </div>
     </div>
   </div>
@@ -1379,7 +1471,7 @@ td {
   <div class="table-container" id="tableContainer">
     <div class="table-header">
       <div class="table-title">Kết Quả Phân Tích <span class="badge" id="rowCount">0</span></div>
-      <div class="table-hint">💡 Nhấp <strong>tên SP</strong> để xóa · Nhấp <strong>tên KH</strong> để xóa hàng · Nhấp "Gợi Ý" để xem chi tiết</div>
+      <div class="table-hint">💡 Nhấp <strong>tên SP</strong> để xóa · Nhấp <strong>tên KH</strong> để xóa hàng · Tag cam "BỎ" = KH từng mua kỳ trước, kỳ này dừng → nên nhắc bán lại</div>
     </div>
     <div class="table-wrapper">
       <table>
@@ -1481,37 +1573,61 @@ function generateKey(name) {
   return toLower(name).replace(/[.#$\[\]\/\\]/g, '_').replace(/\s+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').substring(0, 100) || 'key_' + Date.now();
 }
 
-// ==================== PRODUCT NAME EXTRACTION (FIXED) ====================
+// ==================== PRODUCT NAME EXTRACTION (IMPROVED) ====================
 function extractProductName(fullText) {
   const text = normalize(fullText);
   if (!text || text.length < 2) return null;
   
   // Skip summary rows
   const lowerText = toLower(text);
-  if (lowerText.includes('tổng') || lowerText.includes('total')) return null;
+  if (lowerText === 'tổng' || lowerText === 'total' || lowerText.startsWith('tổng ') || lowerText.startsWith('total ')) return null;
+  if (['nan', 'null', 'undefined', 'none'].includes(lowerText)) return null;
   
   let productName = text;
   
-  // Remove quantity/package information
-  // Pattern: " - Hộp x..." or " - Chai x..." or " - Tuýp x..."
-  const dashMatch = productName.match(/^(.+?)\s+-\s+(Hộp|Chai|Tuýp|Lọ|Ống)/i);
-  if (dashMatch) {
-    productName = dashMatch[1].trim();
+  // Rule 1: strip package info starting with " - Hộp/Chai/Tuýp/Lọ/Ống/Vỉ/Gói/Tube"
+  // GREEDY match: keep product name as long as possible, strip from the LAST " - Hộp..." onwards
+  const pkgMatch = productName.match(/^(.+?)\s*-\s*(Hộp|Chai|Tuýp|Lọ|Ống|Vỉ|Gói|Tube)\b.*$/i);
+  if (pkgMatch) {
+    productName = pkgMatch[1].trim();
   }
   
-  // Remove content in parentheses at the end
-  const parenMatch = productName.match(/^(.+?)\s+\([^)]+\)$/);
+  // Rule 2: strip trailing " - NN g/ml/..." pattern (dash before = clear package size)
+  productName = productName.replace(/\s*-\s*\d+[.,]?\d*\s*(g|ml|l|kg)\s*$/i, '').trim();
+  
+  // Rule 3: trailing size "10g", "5ml" WITHOUT leading dash - only strip if:
+  //   - the product name contains no "mg" anywhere else (likely a package weight, not dose)
+  //   - OR the size is small (1-3 digits) attached like "10g" not "500mg"
+  // To be safe: only strip "Ng" or "Nml" (single/double digits) at end not preceded by "mg"
+  if (!/\d+\s*mg\b/i.test(productName.slice(0, -8))) {
+    // No mg earlier → safe to strip trailing small package size
+    productName = productName.replace(/\s+\d{1,3}\s*(g|ml)\s*$/i, '').trim();
+  }
+  
+  // Rule 4: strip content in parens at very end
+  const parenMatch = productName.match(/^(.+?)\s*\([^)]+\)\s*$/);
   if (parenMatch) {
     productName = parenMatch[1].trim();
   }
   
-  // Remove trailing quantity info
-  productName = productName.replace(/\s+\d+\s*(viên|gói|ống|ml|g)$/i, '').trim();
+  // Rule 5: clean trailing punctuation/dashes
+  productName = productName.replace(/[\s\-,;:]+$/, '').trim();
+  productName = productName.replace(/\s{2,}/g, ' ').trim();
   
-  if (productName.length < 2) return text.split(' - ')[0].trim();
-  if (productName.length < 2) return null;
+  if (productName.length < 2) {
+    const fallback = text.split(/\s+-\s+/)[0].trim();
+    return fallback.length >= 2 ? fallback : null;
+  }
   
   return productName;
+}
+
+// Generate a stable key for product comparison (handles minor formatting differences)
+function productKey(name) {
+  return toLower(name)
+    .replace(/[\s\-,;:().]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 // ==================== JARO-WINKLER SIMILARITY ====================
@@ -1563,32 +1679,83 @@ function jaroWinkler(s1, s2) {
 }
 
 // ==================== FIREBASE INITIALIZATION ====================
+let _fbConnectTimer = null;
+let _fbLastError = '';
+
 function initFirebase() {
   try {
-    firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
+    // Avoid duplicate init
+    if (!firebaseApp) {
+      firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
+    }
     firebaseDb = firebase.database();
     
+    // Connection status listener
     firebaseDb.ref('.info/connected').on('value', (snap) => {
-      isFirebaseConnected = snap.val() === true;
+      const connected = snap.val() === true;
+      isFirebaseConnected = connected;
       updateFirebaseStatus();
       
-      if (isFirebaseConnected) {
+      if (connected) {
+        if (_fbConnectTimer) { clearTimeout(_fbConnectTimer); _fbConnectTimer = null; }
+        _fbLastError = '';
         addLog('success', '✅ Firebase đã kết nối thành công!');
-        loadCatalogFromFirebase();
-        loadCustomersFromFirebase();
+        // Test actual read permission
+        firebaseDb.ref('.info/serverTimeOffset').get().then(() => {
+          loadCatalogFromFirebase();
+          loadCustomersFromFirebase();
+        }).catch(err => {
+          _fbLastError = err.message || String(err);
+          addLog('error', `❌ Firebase có kết nối nhưng không đọc được: ${_fbLastError}`);
+          if (_fbLastError.toLowerCase().includes('permission')) {
+            addLog('error', '⚠️ Rules Firebase đã hết hạn hoặc chặn đọc. Vào Firebase Console → Realtime Database → Rules để sửa.');
+          }
+        });
       } else {
-        addLog('warning', '⚠️ Firebase mất kết nối, sử dụng LocalStorage');
-        loadCatalogFromLocal();
+        addLog('warning', '⚠️ Firebase đang thử kết nối...');
       }
+    }, (err) => {
+      _fbLastError = err.message || String(err);
+      isFirebaseConnected = false;
+      updateFirebaseStatus();
+      addLog('error', `❌ Firebase error: ${_fbLastError}`);
     });
     
-    addLog('info', '✅ Firebase SDK khởi tạo thành công');
+    // Timeout: nếu sau 8s vẫn chưa kết nối thì kết luận "Mất kết nối"
+    _fbConnectTimer = setTimeout(() => {
+      if (!isFirebaseConnected) {
+        addLog('error', '⏱️ Timeout: Firebase không kết nối được sau 8s. Dùng LocalStorage.');
+        addLog('info', 'Nguyên nhân thường gặp: (1) Rules Firebase hết hạn, (2) Database URL sai, (3) Ad-blocker/firewall chặn firebaseio.com, (4) Chạy file:// có thể gặp lỗi CORS.');
+        loadCatalogFromLocal();
+      }
+    }, 8000);
+    
+    addLog('info', '✅ Firebase SDK khởi tạo thành công, đang chờ kết nối...');
   } catch (e) {
     console.error('Firebase init error:', e);
+    _fbLastError = e.message;
     addLog('error', '❌ Firebase lỗi khởi tạo: ' + e.message);
     isFirebaseConnected = false;
     updateFirebaseStatus();
     loadCatalogFromLocal();
+  }
+}
+
+function retryFirebaseConnection() {
+  addLog('info', '🔄 Đang thử kết nối lại Firebase...');
+  showToast('Đang thử kết nối lại...', 'warning');
+  try {
+    if (firebaseDb) {
+      firebase.database().goOffline();
+      setTimeout(() => {
+        firebase.database().goOnline();
+        addLog('info', '🔄 Đã gửi lệnh kết nối lại');
+      }, 500);
+    } else {
+      initFirebase();
+    }
+  } catch(e) {
+    addLog('error', 'Retry thất bại: ' + e.message);
   }
 }
 
@@ -1601,11 +1768,18 @@ function updateFirebaseStatus() {
     const dot = statusDiv.querySelector('.fb-dot');
     if (dot) dot.classList.remove('pulse');
     textSpan.textContent = 'Firebase: Đã kết nối';
+    // Hide retry btn
+    const retry = document.getElementById('fbRetryBtn');
+    if (retry) retry.style.display = 'none';
   } else {
     statusDiv.className = 'fb-pill disconnected';
     const dot = statusDiv.querySelector('.fb-dot');
     if (dot) dot.classList.add('pulse');
-    textSpan.textContent = 'Firebase: Mất kết nối';
+    const errSuffix = _fbLastError ? ` (${_fbLastError.substring(0, 50)})` : '';
+    textSpan.textContent = 'Firebase: Mất kết nối' + errSuffix;
+    // Show retry btn
+    const retry = document.getElementById('fbRetryBtn');
+    if (retry) retry.style.display = 'inline-flex';
   }
 }
 
@@ -1737,23 +1911,55 @@ function readCatalogFile(file) {
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
       
+      // Find header row: look for row containing 'sản phẩm' or 'product' or 'tên'
       let headerIndex = 0;
       for (let i = 0; i < Math.min(8, rows.length); i++) {
-        if (rows[i] && rows[i].some(c => toLower(String(c)).includes('tên'))) {
+        if (rows[i] && rows[i].some(c => {
+          const cl = toLower(String(c));
+          return cl.includes('sản phẩm') || cl.includes('product') || cl.includes('tên');
+        })) {
           headerIndex = i;
           break;
         }
       }
       
       const headerRow = rows[headerIndex].map(c => toLower(String(c)));
-      let productCol = headerRow.findIndex(c => c.includes('tên sp') || c.includes('tên sản phẩm') || c.includes('product'));
-      if (productCol < 0) productCol = 3;
+      
+      // Smart column detection: priority order
+      //   1) 'sản phẩm' WITHOUT 'mã' (e.g. xuất kho file has 'Sản phẩm' at col 5, 'Mã sản phẩm' at col 6)
+      //   2) 'tên sp' / 'tên sản phẩm'
+      //   3) 'product'
+      //   4) ABSOLUTELY NOT fallback to col 3 if file contains 'khách hàng' column
+      let productCol = headerRow.findIndex(c => c.includes('sản phẩm') && !c.includes('mã'));
+      if (productCol < 0) productCol = headerRow.findIndex(c => c.includes('tên sp') || c.includes('tên sản phẩm'));
+      if (productCol < 0) productCol = headerRow.findIndex(c => c.includes('product'));
+      
+      // Check if this is a xuất-kho-style file with Khách hàng column
+      const hasCustomerCol = headerRow.some(c => c.includes('khách'));
+      
+      if (productCol < 0) {
+        if (hasCustomerCol) {
+          // Can't find product col in a xuất kho file → show error
+          showToast('Không tìm thấy cột "Sản phẩm" trong file danh mục. File này giống file xuất kho - có cột "Khách hàng" nhưng không có cột "Sản phẩm". Hãy kiểm tra file.', 'error');
+          addLog('error', `❌ File danh mục: không xác định được cột sản phẩm. Headers: ${headerRow.join(' | ')}`);
+          return;
+        }
+        // Simple file with 1 column (just product names) → use column 0
+        productCol = 0;
+      }
+      
+      addLog('info', `📋 Đọc file danh mục: cột sản phẩm = ${productCol + 1} ("${headerRow[productCol] || '(trống)'}")`);
       
       const productSet = new Set();
       for (let i = headerIndex + 1; i < rows.length; i++) {
         const raw = normalize(String(rows[i][productCol] || ''));
         const name = extractProductName(raw);
         if (name && name.length >= 2) productSet.add(name);
+      }
+      
+      if (productSet.size === 0) {
+        showToast('Không trích xuất được sản phẩm nào từ file. Kiểm tra lại cấu trúc file.', 'error');
+        return;
       }
       
       catalogProducts = [...productSet].sort((a, b) => a.localeCompare(b, 'vi'));
@@ -1764,14 +1970,15 @@ function readCatalogFile(file) {
       const clearWrap = document.getElementById('catalogClearWrap');
       const fileNameSpan = document.getElementById('catalogFileName');
       if (clearWrap) { clearWrap.classList.add('show'); }
-      if (fileNameSpan) { fileNameSpan.textContent = `${file.name} · ${catalogProducts.length} sản phẩm`; }
+      if (fileNameSpan) { fileNameSpan.textContent = `${file.name} · ${catalogProducts.length} sản phẩm (cột ${productCol + 1}: "${headerRow[productCol] || '?'}")`;}
       
       if (analysisResult.length > 0) renderTable(analysisResult);
       
-      showToast(`Đã tải danh mục: ${catalogProducts.length} sản phẩm`, 'success');
+      showToast(`✅ Đã tải danh mục: ${catalogProducts.length} sản phẩm từ cột "${headerRow[productCol]}"`, 'success');
       addLog('success', `📋 Danh mục: ${catalogProducts.length} sản phẩm từ ${file.name}`);
     } catch(err) {
       showToast('Lỗi đọc danh mục: ' + err.message, 'error');
+      addLog('error', 'Lỗi đọc danh mục: ' + err.message);
     }
   };
   reader.readAsArrayBuffer(file);
@@ -1817,8 +2024,8 @@ function clearCatalogFile() {
 function getSuggestionsForCustomer(customer) {
   if (!catalogProducts.length) return null;
   
-  const owned = new Set((customer.products || []).map(p => toLower(p)));
-  return catalogProducts.filter(p => !owned.has(toLower(p)));
+  const ownedKeys = new Set((customer.products || []).map(p => productKey(p)));
+  return catalogProducts.filter(p => !ownedKeys.has(productKey(p)));
 }
 
 // ==================== FILE UPLOAD HANDLERS ====================
@@ -1881,6 +2088,9 @@ function checkReadyForAnalysis() {
 // ==================== MAIN ANALYSIS ====================
 function runAnalysis() {
   if (!exportData || !customerData) return;
+  
+  // Reset period 2 data since Analysis 1 will be rebuilt
+  period2Products = {};
   
   showLoading('Đang phân tích dữ liệu...');
   
@@ -2085,8 +2295,8 @@ function renderTable(data) {
     
     if (p2prods.length > 0) {
       suggestContent += `<div class="p2-suggest-wrap" style="margin-bottom:8px;">
-        <div class="p2-section-title">🆕 Sản phẩm KH tương tác kỳ 2 (chưa có kỳ 1):</div>
-        ${p2prods.map(p => `<span class="p2-tag"><span class="p2-label">KỲ 2</span>${escapeHtml(p)}</span>`).join('')}
+        <div class="p2-section-title">⚠️ SP KH đã mua kỳ trước nhưng kỳ này BỎ → nên nhắc bán lại:</div>
+        ${p2prods.map(p => `<span class="p2-tag"><span class="p2-label">BỎ</span>${escapeHtml(p)}</span>`).join('')}
       </div>`;
     }
     
@@ -2468,24 +2678,27 @@ function exportToExcel() {
   }
   
   const excelData = [
-    ['STT', 'Tên Khách Hàng', 'Số Điện Thoại', 'Sản Phẩm Đã Mua', 'Số SP', 'Gợi Ý Sản Phẩm', 'Số SP Gợi Ý']
+    ['STT', 'Tên Khách Hàng', 'Số Điện Thoại', 'Sản Phẩm Đã Mua (Kỳ Trước)', 'Số SP Kỳ Trước', 'SP KH BỎ Kỳ Này (Nhắc Bán Lại)', 'Số SP Bỏ', 'Gợi Ý Từ Danh Mục', 'Số SP Gợi Ý']
   ];
   
   analysisResult.forEach((c, i) => {
     const suggestions = getSuggestionsForCustomer(c);
+    const p2 = period2Products[c.key] || [];
     excelData.push([
       i + 1,
       c.name,
       c.phone || '',
       (c.products || []).join(', '),
       (c.products || []).length,
+      p2.join(', '),
+      p2.length,
       suggestions ? suggestions.join(', ') : '',
       suggestions ? suggestions.length : ''
     ]);
   });
   
   const ws = XLSX.utils.aoa_to_sheet(excelData);
-  ws['!cols'] = [{wch:5}, {wch:55}, {wch:16}, {wch:120}, {wch:8}, {wch:120}, {wch:10}];
+  ws['!cols'] = [{wch:5}, {wch:55}, {wch:16}, {wch:120}, {wch:10}, {wch:80}, {wch:10}, {wch:120}, {wch:10}];
   
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'KhachHang');
@@ -2663,6 +2876,9 @@ function clearCompareFile() {
   document.getElementById('fileCompare').value = '';
   document.getElementById('btnAnalyze2').style.display = 'none';
   document.getElementById('btnAnalyze2').disabled = true;
+  // Hide preview panel
+  const preview = document.getElementById('file3Preview');
+  if (preview) preview.classList.remove('show');
   // Re-render to clear period 2 suggestions
   if (analysisResult.length > 0) renderTable(analysisResult);
   showToast('Đã xóa file kỳ 2. Upload lại để so sánh.', 'warning');
@@ -2703,24 +2919,75 @@ function processCompareFile(file) {
       
       compareData = rows;
       
+      // === PREVIEW: extract customers & products to show user what was parsed ===
+      let headerIdx = 0;
+      for (let i = 0; i < Math.min(8, rows.length); i++) {
+        if (rows[i] && rows[i].some(c => toLower(String(c)).includes('khách'))) {
+          headerIdx = i; break;
+        }
+      }
+      const hdrRow = (rows[headerIdx] || []).map(c => normalize(String(c)));
+      let custC = hdrRow.findIndex(c => toLower(c).includes('khách'));
+      // Prefer "Sản phẩm" without "mã"
+      let prodC = hdrRow.findIndex(c => toLower(c).includes('sản phẩm') && !toLower(c).includes('mã'));
+      if (prodC < 0) prodC = hdrRow.findIndex(c => toLower(c).includes('sản phẩm') || toLower(c).includes('product'));
+      if (custC < 0) custC = 3;
+      if (prodC < 0) prodC = 5;
+      
+      const custSet = new Set();
+      const prodSet = new Set();
+      for (let i = headerIdx + 1; i < rows.length; i++) {
+        const r = rows[i]; if (!r || !r.length) continue;
+        const cr = normalize(String(r[custC] || ''));
+        const pr = normalize(String(r[prodC] || ''));
+        if (cr && !/^(tổng|total|nan)$/i.test(cr)) custSet.add(cr);
+        const pn = extractProductName(pr);
+        if (pn) prodSet.add(pn);
+      }
+      
+      const sortedProducts = [...prodSet].sort((a, b) => a.localeCompare(b, 'vi'));
+      const sortedCustomers = [...custSet].sort((a, b) => a.localeCompare(b, 'vi'));
+      
       document.getElementById('fileCompareOk').classList.add('show');
-      document.getElementById('compareFileName').textContent = `${file.name} · ${rows.length - 1} dòng`;
+      document.getElementById('compareFileName').innerHTML = 
+        `<strong>${escapeHtml(file.name)}</strong> · ${rows.length - 1} dòng`;
       document.getElementById('cardFile3').classList.add('loaded');
+      
+      // === POPULATE BIG PREVIEW PANEL ===
+      document.getElementById('file3Preview').classList.add('show');
+      document.getElementById('file3CustCount').textContent = `${custSet.size} KH`;
+      document.getElementById('file3ProdCount').textContent = `${prodSet.size} SP`;
+      document.getElementById('file3ColInfo').textContent = `Cột ${custC+1}=KH · Cột ${prodC+1}=SP`;
+      
+      // Show products
+      const prodListEl = document.getElementById('file3ProductList');
+      prodListEl.innerHTML = sortedProducts.map(p => 
+        `<span class="product-sample" title="${escapeHtml(p)}">${escapeHtml(p.length > 50 ? p.substring(0, 50) + '…' : p)}</span>`
+      ).join('') || '<span style="color:var(--text-muted);font-size:11px;">Không tìm thấy sản phẩm nào</span>';
+      
+      // Show customers
+      const custListEl = document.getElementById('file3CustomerList');
+      custListEl.innerHTML = sortedCustomers.map(c => 
+        `<span class="product-sample" style="background:var(--primary-light);color:var(--primary);border-color:rgba(13,148,136,0.3);" title="${escapeHtml(c)}">${escapeHtml(c.length > 45 ? c.substring(0, 45) + '…' : c)}</span>`
+      ).join('') || '<span style="color:var(--text-muted);font-size:11px;">Không tìm thấy khách hàng nào</span>';
       
       // Show Analyze 2 button only if Analysis 1 is done
       if (analysisResult.length > 0) {
         document.getElementById('btnAnalyze2').style.display = 'inline-flex';
         document.getElementById('btnAnalyze2').disabled = false;
+        showToast(`✅ File 3: ${custSet.size} KH + ${prodSet.size} SP. Xem chi tiết ở khung xanh, rồi bấm "Phân Tích Lần 2".`, 'success');
       } else {
         document.getElementById('btnAnalyze2').style.display = 'inline-flex';
         document.getElementById('btnAnalyze2').disabled = true;
-        showToast('Upload xong! Hãy chạy Phân Tích Lần 1 trước rồi mới Phân Tích Lần 2.', 'warning');
+        showToast(`File 3 đã tải (${custSet.size} KH, ${prodSet.size} SP). Hãy chạy Phân Tích Lần 1 trước.`, 'warning');
       }
       
-      addLog('info', `📊 File kỳ 2: ${file.name} - ${rows.length - 1} bản ghi`);
-      showToast(`Đã tải file kỳ 2: ${rows.length - 1} dòng`, 'success');
+      addLog('success', `📊 File kỳ 2: ${file.name} | ${rows.length - 1} dòng | ${custSet.size} KH | ${prodSet.size} SP`);
+      addLog('info', `   Cột KH = ${custC+1} ("${hdrRow[custC]}") | Cột SP = ${prodC+1} ("${hdrRow[prodC]}")`);
+      addLog('info', `   Ví dụ SP: ${sortedProducts.slice(0, 3).join(' | ')}`);
     } catch(err) {
       showToast('Lỗi đọc file kỳ 2: ' + err.message, 'error');
+      addLog('error', 'Lỗi đọc file kỳ 2: ' + err.message);
     }
   };
   reader.readAsArrayBuffer(file);
@@ -2814,13 +3081,18 @@ function runAnalysis2() {
       
       const headerRow = compareData[headerIndex].map(c => normalize(String(c)));
       let customerCol = headerRow.findIndex(c => toLower(c).includes('khách'));
-      let productCol  = headerRow.findIndex(c => toLower(c).includes('sản phẩm') || toLower(c).includes('product'));
+      // Prefer "Sản phẩm" (without "Mã") over "Mã sản phẩm"
+      let productCol  = headerRow.findIndex(c => toLower(c).includes('sản phẩm') && !toLower(c).includes('mã'));
+      if (productCol < 0) productCol = headerRow.findIndex(c => toLower(c).includes('sản phẩm') || toLower(c).includes('product'));
       
       if (customerCol < 0) customerCol = 3;
       if (productCol  < 0) productCol  = 5;
       
+      addLog('info', `🔍 Phân tích 2: Đọc cột KH=${customerCol+1} ("${headerRow[customerCol]}"), cột SP=${productCol+1} ("${headerRow[productCol]}")`);
+      
       // Build customer → products map from FILE 03
       const file3Map = new Map(); // normalizedKey → { display, products: Set }
+      let totalRows3 = 0;
       
       for (let i = headerIndex + 1; i < compareData.length; i++) {
         const row = compareData[i];
@@ -2830,6 +3102,7 @@ function runAnalysis2() {
         const prodRaw = normalize(String(row[productCol]  || ''));
         if (!custRaw || /^(tổng|total|khách hàng|nan)$/i.test(toLower(custRaw))) continue;
         
+        totalRows3++;
         const normKey = normalizeCompanyName(custRaw);
         if (!file3Map.has(normKey)) {
           file3Map.set(normKey, { display: custRaw, products: new Set() });
@@ -2845,6 +3118,7 @@ function runAnalysis2() {
       let newProdCount = 0;
       let unmatchedCount = 0;
       const unmatchedNames = [];
+      const matchLog = [];
       
       for (const [normKey, data3] of file3Map) {
         const match = findBestCustomerMatch(data3.display, threshold);
@@ -2857,14 +3131,20 @@ function runAnalysis2() {
         
         matchCount++;
         const customer = match.customer;
-        const owned1 = new Set((customer.products || []).map(p => toLower(p)));
         
-        // Products in FILE 03 NOT in Analysis 1 for this customer
-        const newProds = [...data3.products].filter(p => !owned1.has(toLower(p)));
+        // === CORRECT LOGIC ===
+        // Find products customer BOUGHT in period 1 but NOT in period 3
+        // = products they USED TO buy but STOPPED this period
+        // → remind seller to re-pitch these products
+        const period3Keys = new Set([...data3.products].map(p => productKey(p)));
+        const droppedProducts = (customer.products || []).filter(p => !period3Keys.has(productKey(p)));
         
-        if (newProds.length > 0) {
-          period2Products[customer.key] = newProds.sort((a, b) => a.localeCompare(b, 'vi'));
-          newProdCount += newProds.length;
+        if (droppedProducts.length > 0) {
+          period2Products[customer.key] = droppedProducts.sort((a, b) => a.localeCompare(b, 'vi'));
+          newProdCount += droppedProducts.length;
+          if (matchLog.length < 5) {
+            matchLog.push(`  • ${customer.name} (khớp ${match.score}%) → ${droppedProducts.length} SP bỏ mua: ${droppedProducts.slice(0, 3).join(', ')}${droppedProducts.length > 3 ? '...' : ''}`);
+          }
         }
       }
       
@@ -2874,14 +3154,19 @@ function runAnalysis2() {
       renderTable(analysisResult);
       hideLoading();
       
-      const msg = `✅ Phân tích kỳ 2 xong: ${matchCount} KH khớp, ${newProdCount} SP mới cần tương tác` +
-                  (unmatchedCount > 0 ? `, ${unmatchedCount} KH kỳ 2 chưa tìm thấy` : '');
+      const msg = `✅ Phân tích kỳ 2 xong: ${totalRows3} dòng | ${file3Map.size} KH trong file 3 | ${matchCount} KH khớp với kỳ 1 | ${newProdCount} SP KH đã BỎ MUA kỳ này → gợi ý bán lại`;
       
       showToast(msg, 'success');
-      addLog('success', `🔍 ${msg}`);
+      addLog('success', msg);
       
-      if (unmatchedCount > 0 && unmatchedNames.length > 0) {
-        addLog('warning', `⚠️ KH kỳ 2 chưa khớp: ${unmatchedNames.slice(0, 5).join(', ')}${unmatchedNames.length > 5 ? '...' : ''}`);
+      if (matchLog.length > 0) {
+        addLog('info', '📋 Ví dụ sản phẩm KH bỏ mua (nên nhắc bán lại):\n' + matchLog.join('\n'));
+      }
+      
+      if (unmatchedCount > 0) {
+        addLog('warning', `⚠️ ${unmatchedCount} KH trong file 3 chưa khớp được với kỳ 1 (ngưỡng ${threshold}%):`);
+        unmatchedNames.slice(0, 10).forEach(n => addLog('warning', `   • ${n}`));
+        if (unmatchedNames.length > 10) addLog('warning', `   ...và ${unmatchedNames.length - 10} KH khác`);
       }
       
     } catch(e) {
@@ -2938,6 +3223,7 @@ window.cancelTagDelete = cancelTagDelete;
 window.confirmTagDelete = confirmTagDelete;
 window.clearCatalogFile = clearCatalogFile;
 window.clearCompareFile = clearCompareFile;
+window.retryFirebaseConnection = retryFirebaseConnection;
 
 // Hide tag-delete panel when clicking elsewhere
 document.addEventListener('click', (e) => {
