@@ -1244,6 +1244,23 @@ td {
   margin-bottom: 6px;
 }
 
+.file3-preview-note {
+  font-size: 12px;
+  color: #0369a1;
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border: 1px dashed rgba(14,165,233,0.4);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.file3-preview-note strong {
+  color: #0284c7;
+  font-weight: 700;
+}
+
 /* === PHÂN TÍCH 2 BTN === */
 .btn-analyze2 {
   background: linear-gradient(135deg, #0ea5e9, #0284c7);
@@ -1285,6 +1302,443 @@ td {
   margin-bottom: 4px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+/* === MISSING CUSTOMER ALERT (period 1 but not in period 2) === */
+.p2-missing-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.p2-missing-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border: 1px solid rgba(220,38,38,0.3);
+  border-left: 3px solid var(--danger);
+  border-radius: 8px;
+}
+.p2-missing-icon {
+  font-size: 20px;
+  line-height: 1;
+  animation: alertPulse 2s ease-in-out infinite;
+}
+@keyframes alertPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+.p2-missing-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--danger);
+  line-height: 1.35;
+}
+.p2-missing-sub {
+  font-size: 10.5px;
+  color: #991b1b;
+  margin-top: 2px;
+  font-weight: 500;
+}
+.p2-tag-missing {
+  background: #fef2f2 !important;
+  border-color: rgba(220,38,38,0.3) !important;
+  color: var(--danger) !important;
+}
+.p2-label-missing {
+  background: #fecaca !important;
+  color: #7f1d1d !important;
+}
+
+/* === NEW CUSTOMERS DIAGNOSTIC PANEL === */
+.new-customers-panel {
+  display: none;
+  margin: 0 auto 16px;
+  max-width: 1600px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border: 1px solid rgba(217,119,6,0.35);
+  border-left: 4px solid var(--warning);
+  border-radius: 10px;
+}
+.new-customers-panel.show { display: block; }
+.new-customers-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.new-customers-panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #92400e;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.new-customers-panel-close {
+  background: transparent;
+  border: none;
+  color: #92400e;
+  cursor: pointer;
+  font-size: 15px;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.new-customers-panel-close:hover { background: rgba(217,119,6,0.15); }
+.new-customers-panel-sub {
+  font-size: 11.5px;
+  color: #78350f;
+  margin-bottom: 8px;
+}
+.new-customers-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+.new-customer-chip {
+  font-size: 11.5px;
+  padding: 4px 10px;
+  background: white;
+  border: 1px solid rgba(217,119,6,0.4);
+  border-radius: 100px;
+  color: #92400e;
+  font-weight: 500;
+}
+
+/* === AI EMAIL BUTTON (inside each row with dropped products) === */
+.btn-ai-email {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  box-shadow: 0 2px 6px rgba(99,102,241,0.25);
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.btn-ai-email::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  transition: left 0.6s;
+}
+.btn-ai-email:hover::before { left: 100%; }
+.btn-ai-email:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+}
+.btn-ai-email:active { transform: translateY(0); }
+.btn-ai-email .ai-icon {
+  display: inline-flex;
+  font-size: 13px;
+  animation: sparkle 2s ease-in-out infinite;
+}
+@keyframes sparkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+/* === AI EMAIL MODAL === */
+.email-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.55);
+  backdrop-filter: blur(4px);
+  z-index: 2100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: modalFadeIn 0.2s ease;
+}
+.email-modal-overlay.show { display: flex; }
+@keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.email-modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  animation: modalSlideUp 0.3s ease;
+  overflow: hidden;
+}
+@keyframes modalSlideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.email-modal-header {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.email-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.email-modal-title .ai-icon {
+  font-size: 20px;
+  animation: sparkle 2s ease-in-out infinite;
+}
+.email-modal-close {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.email-modal-close:hover { background: rgba(255,255,255,0.35); }
+
+.email-modal-sub {
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.85);
+  margin-top: 2px;
+  font-weight: 400;
+}
+
+.email-modal-body {
+  padding: 18px 22px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.email-customer-info {
+  background: var(--surface-hover);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.email-customer-info strong { color: var(--text); }
+
+.email-tone-picker {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.email-tone-label {
+  font-size: 11px;
+  color: var(--text-light);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 4px;
+}
+.email-tone-btn {
+  padding: 5px 12px;
+  font-size: 11.5px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text-light);
+  transition: all 0.15s;
+}
+.email-tone-btn:hover {
+  border-color: #8b5cf6;
+  color: #7c3aed;
+}
+.email-tone-btn.active {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 6px rgba(99,102,241,0.3);
+}
+
+.email-sender-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.email-sender-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 7px 12px;
+  font-size: 12.5px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: white;
+  outline: none;
+  transition: all 0.15s;
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+}
+.email-sender-input::placeholder {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.email-sender-input:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.1);
+}
+
+.email-typing-indicator {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #eef2ff, #f5f3ff);
+  border-radius: 10px;
+  font-size: 12px;
+  color: #6366f1;
+  font-weight: 500;
+}
+.email-typing-indicator.show { display: flex; }
+.email-typing-indicator .dots {
+  display: inline-flex;
+  gap: 3px;
+}
+.email-typing-indicator .dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #8b5cf6;
+  animation: typingBounce 1.2s infinite;
+}
+.email-typing-indicator .dots span:nth-child(2) { animation-delay: 0.15s; }
+.email-typing-indicator .dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+.email-content-box {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text);
+  white-space: pre-wrap;
+  font-family: 'Inter', sans-serif;
+  background: #fafafa;
+  min-height: 180px;
+  max-height: 380px;
+  overflow-y: auto;
+  outline: none;
+  resize: none;
+  width: 100%;
+}
+.email-content-box:focus {
+  border-color: #8b5cf6;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.1);
+}
+
+.email-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 14px;
+  background: #8b5cf6;
+  vertical-align: text-bottom;
+  animation: cursorBlink 0.8s infinite;
+}
+@keyframes cursorBlink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.email-modal-footer {
+  padding: 14px 22px;
+  background: var(--surface-hover);
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+.email-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+.email-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.email-btn-secondary {
+  background: white;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.email-btn-secondary:hover:not(:disabled) {
+  border-color: var(--border-dark);
+  background: var(--surface-hover);
+}
+.email-btn-primary {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  box-shadow: 0 2px 6px rgba(99,102,241,0.3);
+}
+.email-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+}
+.email-btn-regen {
+  background: white;
+  color: #7c3aed;
+  border: 1px solid rgba(139,92,246,0.4);
+}
+.email-btn-regen:hover:not(:disabled) {
+  background: #f5f3ff;
+  border-color: #8b5cf6;
+}
+
+@media (max-width: 540px) {
+  .email-modal { max-height: 95vh; }
+  .email-modal-header { padding: 14px 16px; }
+  .email-modal-body { padding: 14px 16px; }
+  .email-modal-footer { padding: 12px 16px; }
 }
 
 /* === TRASH CONFIRM PANEL === */
@@ -1415,7 +1869,7 @@ td {
         <button class="btn-del-file3" onclick="clearCompareFile()">🗑️ Xóa</button>
       </div>
       
-      <!-- BIG VISIBLE PREVIEW OF WHAT WAS EXTRACTED -->
+      <!-- COMPACT PREVIEW: only summary badges for a cleaner look -->
       <div class="file3-preview" id="file3Preview">
         <div class="file3-preview-header">
           <div class="file3-preview-title">📊 Đã trích xuất từ File 03</div>
@@ -1425,10 +1879,9 @@ td {
             <span class="stat-badge cols" id="file3ColInfo">cột ?</span>
           </div>
         </div>
-        <div class="file3-section-label">📦 Danh sách sản phẩm trong file 3:</div>
-        <div class="file3-product-list" id="file3ProductList"></div>
-        <div class="file3-section-label">👥 Danh sách khách hàng trong file 3:</div>
-        <div class="file3-product-list" id="file3CustomerList" style="max-height:100px;"></div>
+        <div class="file3-preview-note">
+          ✨ Dữ liệu đã sẵn sàng — bấm <strong>Phân Tích Lần 2</strong> để so sánh với kỳ trước
+        </div>
       </div>
     </div>
   </div>
@@ -1453,6 +1906,19 @@ td {
     <div class="stat-card"><div class="stat-number" id="statProducts">0</div><div class="stat-label">Sản Phẩm</div></div>
     <div class="stat-card"><div class="stat-number" id="statPhones">0</div><div class="stat-label">Có SĐT</div></div>
     <div class="stat-card"><div class="stat-number" id="statRecords">0</div><div class="stat-label">Bản Ghi Gốc</div></div>
+  </div>
+
+  <!-- Diagnostic panel for customers in file 3 who didn't match any period-1 customer -->
+  <div class="new-customers-panel" id="newCustomersPanel">
+    <div class="new-customers-panel-header">
+      <div class="new-customers-panel-title">
+        <span>🆕</span>
+        <span id="newCustomersPanelTitle">KH xuất hiện kỳ này nhưng chưa khớp với kỳ trước</span>
+      </div>
+      <button class="new-customers-panel-close" onclick="document.getElementById('newCustomersPanel').classList.remove('show')" title="Đóng">✕</button>
+    </div>
+    <div class="new-customers-panel-sub">Có thể là KH mới, hoặc tên công ty viết khác với kỳ trước. Kiểm tra lại để cập nhật danh sách KH nếu cần.</div>
+    <div class="new-customers-list" id="newCustomersList"></div>
   </div>
 
   <div class="search-box" id="searchBox">
@@ -1509,6 +1975,66 @@ td {
 
 <div class="toast-container" id="toastContainer"></div>
 
+<!-- ==================== AI EMAIL COMPOSITION MODAL ==================== -->
+<div class="email-modal-overlay" id="emailModalOverlay">
+  <div class="email-modal">
+    <div class="email-modal-header">
+      <div>
+        <div class="email-modal-title">
+          <span class="ai-icon">✨</span>
+          <span>Soạn Thư AI</span>
+        </div>
+        <div class="email-modal-sub">Thư mời khách hàng xem xét lại các sản phẩm đã dừng</div>
+      </div>
+      <button class="email-modal-close" onclick="closeEmailModal()" title="Đóng">✕</button>
+    </div>
+    <div class="email-modal-body">
+      <div class="email-customer-info" id="emailCustomerInfo">
+        <!-- Filled dynamically -->
+      </div>
+
+      <div class="email-tone-picker" id="emailSalutationPicker">
+        <span class="email-tone-label">Xưng hô:</span>
+        <button class="email-tone-btn active" data-salutation="Anh/Chị" onclick="selectSalutation('Anh/Chị')">Anh/Chị</button>
+        <button class="email-tone-btn" data-salutation="Anh" onclick="selectSalutation('Anh')">Anh</button>
+        <button class="email-tone-btn" data-salutation="Chị" onclick="selectSalutation('Chị')">Chị</button>
+        <button class="email-tone-btn" data-salutation="Em" onclick="selectSalutation('Em')">Em</button>
+        <button class="email-tone-btn" data-salutation="Cô" onclick="selectSalutation('Cô')">Cô</button>
+        <button class="email-tone-btn" data-salutation="Chú" onclick="selectSalutation('Chú')">Chú</button>
+      </div>
+
+      <div class="email-sender-row">
+        <label for="emailSenderName" class="email-tone-label">Người viết:</label>
+        <input type="text" id="emailSenderName" class="email-sender-input" placeholder="VD: Nguyễn Thị A (bỏ trống = Bộ phận Kinh doanh)" spellcheck="false" autocomplete="off" />
+      </div>
+
+      <div class="email-tone-picker" id="emailTonePicker">
+        <span class="email-tone-label">Phong cách:</span>
+        <button class="email-tone-btn active" data-tone="formal" onclick="selectEmailTone('formal')">🎩 Trang trọng</button>
+        <button class="email-tone-btn" data-tone="friendly" onclick="selectEmailTone('friendly')">🤝 Thân thiện</button>
+        <button class="email-tone-btn" data-tone="brief" onclick="selectEmailTone('brief')">⚡ Ngắn gọn</button>
+      </div>
+      <div class="email-typing-indicator" id="emailTypingIndicator">
+        <span class="ai-icon" style="animation: sparkle 2s ease-in-out infinite;">✨</span>
+        <span>AI đang soạn thư</span>
+        <span class="dots"><span></span><span></span><span></span></span>
+      </div>
+      <textarea class="email-content-box" id="emailContentBox" placeholder="Nội dung thư sẽ hiển thị tại đây..." spellcheck="false"></textarea>
+    </div>
+    <div class="email-modal-footer">
+      <button class="email-btn email-btn-regen" id="btnRegenEmail" onclick="regenerateEmail()">
+        <span>🔄</span><span>Soạn lại</span>
+      </button>
+      <button class="email-btn email-btn-secondary" onclick="downloadEmailAsTxt()">
+        <span>📥</span><span>Tải .txt</span>
+      </button>
+      <button class="email-btn email-btn-primary" id="btnCopyEmail" onclick="copyEmailToClipboard()">
+        <span>📋</span><span>Sao chép</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ==================== CONFIGURATION ====================
 const FIREBASE_CONFIG = {
@@ -1536,7 +2062,9 @@ let customerData = null;
 let catalogProducts = [];
 let analysisResult = [];
 let compareData = null;        // FILE 03 comparison data
-let period2Products = {};      // { customerKey: [products unique to period 2] }
+let period2Products = {};      // { customerKey: [products dropped in period 2] }
+let period2MissingCustomers = {}; // { customerKey: true } — KH kỳ trước nhưng không xuất hiện kỳ này
+let period2NewCustomers = [];  // [{name, products}] — KH xuất hiện trong file 3 nhưng không khớp với kỳ trước
 
 // Pending tag-delete state
 let _pendingDelKey = null;
@@ -2091,6 +2619,9 @@ function runAnalysis() {
   
   // Reset period 2 data since Analysis 1 will be rebuilt
   period2Products = {};
+  period2MissingCustomers = {};
+  period2NewCustomers = [];
+  _renderNewCustomersPanel();
   
   showLoading('Đang phân tích dữ liệu...');
   
@@ -2290,13 +2821,37 @@ function renderTable(data) {
     
     const suggestions = getSuggestionsForCustomer(customer);
     const p2prods = period2Products[customer.key] || [];
+    const isMissing = !!period2MissingCustomers[customer.key];
     
     let suggestContent = '';
     
-    if (p2prods.length > 0) {
+    if (isMissing) {
+      // KH kỳ trước nhưng không xuất hiện kỳ này
+      suggestContent += `<div class="p2-missing-wrap" style="margin-bottom:8px;">
+        <div class="p2-missing-alert">
+          <span class="p2-missing-icon">🚨</span>
+          <div>
+            <div class="p2-missing-title">Khách hàng không có hợp tác kỳ này, kiểm tra lại!</div>
+            <div class="p2-missing-sub">KH từng mua kỳ trước nhưng không xuất hiện trong file kỳ này</div>
+          </div>
+        </div>
+        ${p2prods.length > 0 ? `
+          <div class="p2-section-title" style="margin-top:6px;">Sản phẩm đã mua kỳ trước (${p2prods.length}):</div>
+          <div>${p2prods.map(p => `<span class="p2-tag p2-tag-missing"><span class="p2-label p2-label-missing">MẤT</span>${escapeHtml(p)}</span>`).join('')}</div>
+        ` : ''}
+        <button class="btn-ai-email" onclick="openEmailModal('${escapeHtml(customer.key)}')" title="Soạn thư hỏi thăm khách hàng không có hợp tác kỳ này">
+          <span class="ai-icon">✨</span>
+          <span>Soạn Thư AI</span>
+        </button>
+      </div>`;
+    } else if (p2prods.length > 0) {
       suggestContent += `<div class="p2-suggest-wrap" style="margin-bottom:8px;">
         <div class="p2-section-title">⚠️ SP KH đã mua kỳ trước nhưng kỳ này BỎ → nên nhắc bán lại:</div>
         ${p2prods.map(p => `<span class="p2-tag"><span class="p2-label">BỎ</span>${escapeHtml(p)}</span>`).join('')}
+        <button class="btn-ai-email" onclick="openEmailModal('${escapeHtml(customer.key)}')" title="Soạn thư mời khách hàng xem xét lại các sản phẩm đã dừng">
+          <span class="ai-icon">✨</span>
+          <span>Soạn Thư AI</span>
+        </button>
       </div>`;
     }
     
@@ -2775,6 +3330,9 @@ function performDeleteAll() {
     customerData = null;
     compareData = null;
     period2Products = {};
+    period2MissingCustomers = {};
+    period2NewCustomers = [];
+    _renderNewCustomersPanel();
     
     // Reset UI
     document.getElementById('cardExport').classList.remove('loaded');
@@ -2870,6 +3428,9 @@ catalogInput.addEventListener('change', () => {
 function clearCompareFile() {
   compareData = null;
   period2Products = {};
+  period2MissingCustomers = {};
+  period2NewCustomers = [];
+  _renderNewCustomersPanel();
   document.getElementById('fileCompareOk').classList.remove('show');
   document.getElementById('cardFile3').classList.remove('loaded');
   document.getElementById('compareFileName').textContent = '';
@@ -2959,17 +3520,8 @@ function processCompareFile(file) {
       document.getElementById('file3ProdCount').textContent = `${prodSet.size} SP`;
       document.getElementById('file3ColInfo').textContent = `Cột ${custC+1}=KH · Cột ${prodC+1}=SP`;
       
-      // Show products
-      const prodListEl = document.getElementById('file3ProductList');
-      prodListEl.innerHTML = sortedProducts.map(p => 
-        `<span class="product-sample" title="${escapeHtml(p)}">${escapeHtml(p.length > 50 ? p.substring(0, 50) + '…' : p)}</span>`
-      ).join('') || '<span style="color:var(--text-muted);font-size:11px;">Không tìm thấy sản phẩm nào</span>';
-      
-      // Show customers
-      const custListEl = document.getElementById('file3CustomerList');
-      custListEl.innerHTML = sortedCustomers.map(c => 
-        `<span class="product-sample" style="background:var(--primary-light);color:var(--primary);border-color:rgba(13,148,136,0.3);" title="${escapeHtml(c)}">${escapeHtml(c.length > 45 ? c.substring(0, 45) + '…' : c)}</span>`
-      ).join('') || '<span style="color:var(--text-muted);font-size:11px;">Không tìm thấy khách hàng nào</span>';
+      // Note: we no longer render full product/customer lists here — keeps the UI clean.
+      // Full data is still available in `compareData` for Phân Tích Lần 2.
       
       // Show Analyze 2 button only if Analysis 1 is done
       if (analysisResult.length > 0) {
@@ -3058,6 +3610,25 @@ function findBestCustomerMatch(rawName, threshold) {
 }
 
 // ==================== ANALYSIS 2 ====================
+// Render diagnostic panel listing customers in file 3 that didn't match any period-1 customer
+function _renderNewCustomersPanel() {
+  const panel = document.getElementById('newCustomersPanel');
+  if (!panel) return;
+  const list = document.getElementById('newCustomersList');
+  const title = document.getElementById('newCustomersPanelTitle');
+  
+  if (!period2NewCustomers || period2NewCustomers.length === 0) {
+    panel.classList.remove('show');
+    return;
+  }
+  
+  title.textContent = `🆕 ${period2NewCustomers.length} KH xuất hiện kỳ này nhưng chưa khớp với kỳ trước`;
+  list.innerHTML = period2NewCustomers.map(c => 
+    `<span class="new-customer-chip" title="${escapeHtml(c.name)} · ${c.products.length} SP">${escapeHtml(c.name.length > 55 ? c.name.substring(0, 55) + '…' : c.name)} <span style="opacity:0.6;">· ${c.products.length} SP</span></span>`
+  ).join('');
+  panel.classList.add('show');
+}
+
 function runAnalysis2() {
   if (!compareData || !analysisResult.length) {
     showToast('Cần có dữ liệu Phân Tích Lần 1 và file kỳ 2 trước', 'warning');
@@ -3111,31 +3682,36 @@ function runAnalysis2() {
         if (prod) file3Map.get(normKey).products.add(prod);
       }
       
-      // Reset period2Products
+      // Reset period2Products and related state
       period2Products = {};
+      period2MissingCustomers = {};
+      period2NewCustomers = [];
       
       let matchCount = 0;
       let newProdCount = 0;
       let unmatchedCount = 0;
-      const unmatchedNames = [];
+      const matchedCustomerKeys = new Set();
       const matchLog = [];
       
       for (const [normKey, data3] of file3Map) {
         const match = findBestCustomerMatch(data3.display, threshold);
         
         if (!match) {
+          // KH xuất hiện trong file 3 nhưng không có trong kỳ trước
           unmatchedCount++;
-          unmatchedNames.push(data3.display);
+          period2NewCustomers.push({
+            name: data3.display,
+            products: [...data3.products].sort((a, b) => a.localeCompare(b, 'vi'))
+          });
           continue;
         }
         
         matchCount++;
         const customer = match.customer;
+        matchedCustomerKeys.add(customer.key);
         
-        // === CORRECT LOGIC ===
         // Find products customer BOUGHT in period 1 but NOT in period 3
-        // = products they USED TO buy but STOPPED this period
-        // → remind seller to re-pitch these products
+        // = products they USED TO buy but STOPPED this period → nên nhắc bán lại
         const period3Keys = new Set([...data3.products].map(p => productKey(p)));
         const droppedProducts = (customer.products || []).filter(p => !period3Keys.has(productKey(p)));
         
@@ -3148,26 +3724,45 @@ function runAnalysis2() {
         }
       }
       
+      // NEW: Detect customers from period 1 who DIDN'T appear in period 2 file at all
+      // → "Khách hàng không có hợp tác kỳ này hay đã không còn hợp tác"
+      let missingCustCount = 0;
+      for (const customer of analysisResult) {
+        if (!matchedCustomerKeys.has(customer.key)) {
+          period2MissingCustomers[customer.key] = true;
+          missingCustCount++;
+          // Gán toàn bộ SP kỳ trước vào period2Products để nút Soạn Thư AI hoạt động
+          if (customer.products && customer.products.length > 0) {
+            period2Products[customer.key] = [...customer.products].sort((a, b) => a.localeCompare(b, 'vi'));
+          }
+        }
+      }
+      
       // Enable Analyze 2 button after first run
       document.getElementById('btnAnalyze2').disabled = false;
       
       renderTable(analysisResult);
       hideLoading();
       
-      const msg = `✅ Phân tích kỳ 2 xong: ${totalRows3} dòng | ${file3Map.size} KH trong file 3 | ${matchCount} KH khớp với kỳ 1 | ${newProdCount} SP KH đã BỎ MUA kỳ này → gợi ý bán lại`;
+      const msg = `✅ Phân tích kỳ 2 xong: ${matchCount} KH khớp · ${missingCustCount} KH không hợp tác kỳ này · ${newProdCount} SP bị bỏ · ${unmatchedCount} KH mới chưa khớp`;
       
       showToast(msg, 'success');
-      addLog('success', msg);
+      addLog('success', `✅ Phân tích kỳ 2: ${totalRows3} dòng file 3 | ${file3Map.size} KH trong file 3`);
+      addLog('info', `   → ${matchCount} KH khớp với kỳ 1 | ${newProdCount} SP bị bỏ → nhắc bán lại`);
+      addLog('info', `   → ${missingCustCount} KH kỳ trước KHÔNG xuất hiện kỳ này (nên xem lại quan hệ)`);
       
       if (matchLog.length > 0) {
-        addLog('info', '📋 Ví dụ sản phẩm KH bỏ mua (nên nhắc bán lại):\n' + matchLog.join('\n'));
+        addLog('info', '📋 Ví dụ sản phẩm KH bỏ mua:\n' + matchLog.join('\n'));
       }
       
       if (unmatchedCount > 0) {
-        addLog('warning', `⚠️ ${unmatchedCount} KH trong file 3 chưa khớp được với kỳ 1 (ngưỡng ${threshold}%):`);
-        unmatchedNames.slice(0, 10).forEach(n => addLog('warning', `   • ${n}`));
-        if (unmatchedNames.length > 10) addLog('warning', `   ...và ${unmatchedNames.length - 10} KH khác`);
+        addLog('warning', `⚠️ ${unmatchedCount} KH trong file 3 chưa khớp được với kỳ 1 (ngưỡng ${threshold}%) → có thể là KH mới hoặc tên viết khác:`);
+        period2NewCustomers.slice(0, 10).forEach(c => addLog('warning', `   • ${c.name}`));
+        if (period2NewCustomers.length > 10) addLog('warning', `   ...và ${period2NewCustomers.length - 10} KH khác`);
       }
+      
+      // Show diagnostic panel if there are new customers unmatched
+      _renderNewCustomersPanel();
       
     } catch(e) {
       hideLoading();
@@ -3256,6 +3851,425 @@ document.getElementById('saveCatalogBtn').addEventListener('click', saveCatalogT
 document.getElementById('searchInput').addEventListener('input', filterTable);
 document.getElementById('thresholdSlider').addEventListener('input', (e) => {
   document.getElementById('thresholdValue').textContent = e.target.value + '%';
+});
+
+// ==================== AI EMAIL COMPOSITION ====================
+const SENDER_NAME_STORAGE_KEY = 'ideco_emailSenderName';
+
+let _emailState = {
+  customerKey: null,
+  customerName: '',
+  phone: '',
+  droppedProducts: [],
+  isMissing: false,      // true if KH had no purchases in period 2 at all
+  currentTone: 'formal',
+  currentSalutation: 'Anh/Chị',
+  senderName: '',
+  typingTimer: null,
+  isTyping: false
+};
+
+let _senderDebounceTimer = null;
+
+function _loadSavedSenderName() {
+  try { return localStorage.getItem(SENDER_NAME_STORAGE_KEY) || ''; }
+  catch (e) { return ''; }
+}
+function _saveSenderName(name) {
+  try { localStorage.setItem(SENDER_NAME_STORAGE_KEY, name); }
+  catch (e) { /* ignore */ }
+}
+
+function openEmailModal(customerKey) {
+  const customer = analysisResult.find(c => c.key === customerKey);
+  if (!customer) {
+    showToast('Không tìm thấy khách hàng', 'error');
+    return;
+  }
+  const dropped = period2Products[customerKey] || [];
+  if (dropped.length === 0) {
+    showToast('Không có sản phẩm nào để nhắc', 'warning');
+    return;
+  }
+
+  _emailState.customerKey = customerKey;
+  _emailState.customerName = customer.name || 'Quý khách';
+  _emailState.phone = customer.phone || '';
+  _emailState.droppedProducts = [...dropped];
+  _emailState.isMissing = !!period2MissingCustomers[customerKey];
+  _emailState.currentTone = 'formal';
+  _emailState.currentSalutation = 'Anh/Chị';
+  _emailState.senderName = _loadSavedSenderName();
+
+  // Reset salutation buttons (scoped to salutation picker only)
+  document.querySelectorAll('#emailSalutationPicker .email-tone-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.salutation === 'Anh/Chị');
+  });
+  // Reset tone buttons (scoped to tone picker only)
+  document.querySelectorAll('#emailTonePicker .email-tone-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tone === 'formal');
+  });
+  // Pre-fill saved sender name
+  document.getElementById('emailSenderName').value = _emailState.senderName;
+
+  // Fill customer info
+  const infoEl = document.getElementById('emailCustomerInfo');
+  const phoneHtml = customer.phone
+    ? `<span>📞 <strong>${escapeHtml(customer.phone)}</strong></span>`
+    : `<span style="color:var(--text-muted);">📞 Chưa có SĐT</span>`;
+  const statusHtml = _emailState.isMissing
+    ? `<span style="color:var(--danger);font-weight:600;">🚨 Không hợp tác kỳ này</span>`
+    : `<span>📦 <strong>${dropped.length}</strong> SP đã dừng</span>`;
+  infoEl.innerHTML = `
+    <span>👤 <strong>${escapeHtml(customer.name)}</strong></span>
+    <span style="color:var(--text-muted);">·</span>
+    ${phoneHtml}
+    <span style="color:var(--text-muted);">·</span>
+    ${statusHtml}
+  `;
+
+  // Show modal
+  document.getElementById('emailModalOverlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+
+  // Start AI "typing" animation
+  _startAIComposition(true);
+}
+
+function closeEmailModal() {
+  document.getElementById('emailModalOverlay').classList.remove('show');
+  document.body.style.overflow = '';
+  _stopTyping();
+  if (_senderDebounceTimer) {
+    clearTimeout(_senderDebounceTimer);
+    _senderDebounceTimer = null;
+  }
+}
+
+function selectEmailTone(tone) {
+  if (_emailState.currentTone === tone && !_emailState.isTyping) return;
+  _emailState.currentTone = tone;
+  document.querySelectorAll('#emailTonePicker .email-tone-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tone === tone);
+  });
+  _startAIComposition(true);
+}
+
+function selectSalutation(sal) {
+  if (_emailState.currentSalutation === sal && !_emailState.isTyping) return;
+  _emailState.currentSalutation = sal;
+  document.querySelectorAll('#emailSalutationPicker .email-tone-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.salutation === sal);
+  });
+  _startAIComposition(true);
+}
+
+function regenerateEmail() {
+  _startAIComposition(true);
+}
+
+function _stopTyping() {
+  if (_emailState.typingTimer) {
+    clearInterval(_emailState.typingTimer);
+    _emailState.typingTimer = null;
+  }
+  _emailState.isTyping = false;
+  document.getElementById('emailTypingIndicator').classList.remove('show');
+  document.getElementById('btnCopyEmail').disabled = false;
+  document.getElementById('btnRegenEmail').disabled = false;
+}
+
+function _startAIComposition(animate) {
+  _stopTyping();
+  const letter = _composeLetter(
+    _emailState.customerName,
+    _emailState.droppedProducts,
+    _emailState.currentTone,
+    _emailState.currentSalutation,
+    _emailState.senderName,
+    _emailState.isMissing
+  );
+
+  const box = document.getElementById('emailContentBox');
+
+  if (!animate) {
+    // Instant update (used when sender name changes — avoids jarring replay)
+    box.value = letter;
+    return;
+  }
+
+  const indicator = document.getElementById('emailTypingIndicator');
+  const btnCopy = document.getElementById('btnCopyEmail');
+  const btnRegen = document.getElementById('btnRegenEmail');
+
+  // Show typing indicator, lock buttons
+  indicator.classList.add('show');
+  btnCopy.disabled = true;
+  btnRegen.disabled = true;
+  box.value = '';
+  _emailState.isTyping = true;
+
+  // Animate text appearing (AI-typing effect). Type in chunks for speed.
+  let i = 0;
+  const step = 3; // chars per tick
+  const interval = 12; // ms per tick
+  _emailState.typingTimer = setInterval(() => {
+    if (i >= letter.length) {
+      _stopTyping();
+      box.value = letter;
+      box.scrollTop = 0;
+      return;
+    }
+    i = Math.min(i + step, letter.length);
+    box.value = letter.substring(0, i);
+    box.scrollTop = box.scrollHeight;
+  }, interval);
+}
+
+function _composeLetter(customerName, droppedProducts, tone, salutation, senderName, isMissing) {
+  const cleanName = String(customerName || 'Quý khách').trim();
+  const productList = droppedProducts.map(p => `  • ${p}`).join('\n');
+  const countText = droppedProducts.length;
+  const sal = (salutation && String(salutation).trim()) || 'Anh/Chị';
+  const signer = (senderName && String(senderName).trim()) || 'Bộ phận Kinh doanh';
+
+  // Shared P/S block appended to every letter (all tones).
+  // Note: P/S intentionally keeps "Anh/Chị" as generic marketing text
+  // regardless of the selected salutation.
+  const _letterPS =
+`────────────────────────────────────
+P/S: Công ty hiện có hơn 500 sản phẩm thuốc OTC/ETC đa dạng. Nếu Anh/Chị quan tâm, mời tham khảo thêm tại:
+  • https://ideco-thuoc2.netlify.com
+  • https://ideco-sanpham.netlify.app cho nhóm dược mỹ phẩm & thiết bị y tế loại A nhập khẩu
+Là khách hàng thân thuộc, Anh/Chị được công ty ưu đãi đặc biệt: cho phép bán thử — đổi trả linh hoạt.
+📞 Liên hệ: 0385.400.437  hoặc  0938.151.422`;
+
+  // ====== MISSING CUSTOMER LETTERS (KH không có hợp tác kỳ này) ======
+  // Sử dụng khi KH từng mua kỳ trước nhưng hoàn toàn biến mất ở kỳ này
+  // Giọng văn: hỏi thăm ân cần, thể hiện lo lắng, không trách móc, mong tiếp tục hợp tác
+  if (isMissing) {
+    if (tone === 'brief') {
+      return (
+`Kính gửi ${sal} ${cleanName},
+
+Cảm ơn ${sal} đã đồng hành cùng chúng tôi trong thời gian qua.
+
+Qua rà soát gần đây, chúng tôi nhận thấy kỳ này ${sal} chưa đặt hàng. Chúng tôi có chút lo lắng vì không được phục vụ ${sal} như trước.
+
+Những sản phẩm ${sal} từng sử dụng:
+
+${productList}
+
+Nếu có bất kỳ vướng mắc nào về giá, chất lượng hay dịch vụ, rất mong ${sal} chia sẻ để chúng tôi điều chỉnh. Rất mong tiếp tục được đồng hành cùng ${sal}.
+
+Trân trọng cảm ơn,
+${signer}
+
+${_letterPS}`
+      );
+    }
+
+    if (tone === 'friendly') {
+      return (
+`Kính gửi ${sal} ${cleanName},
+
+Lời đầu tiên, chúng tôi xin gửi đến ${sal} lời chào trân trọng và lời cảm ơn chân thành vì đã luôn tin tưởng, đồng hành cùng chúng tôi trong suốt thời gian qua.
+
+Trong quá trình rà soát gần đây, chúng tôi nhận thấy kỳ này ${sal} chưa đặt hàng từ bên chúng tôi. Thú thật, chúng tôi có chút lo lắng và tự hỏi liệu có điều gì khiến ${sal} tạm ngừng hợp tác hay không. Những sản phẩm ${sal} từng rất tin dùng trước đây:
+
+${productList}
+
+Chúng tôi rất trân trọng mối quan hệ lâu dài với ${sal}, nên muốn chủ động hỏi thăm: có phải gần đây bên ${sal} có sự thay đổi về nhu cầu, hay có bất kỳ vấn đề nào về giá cả, chất lượng, thời gian giao hàng, dịch vụ hậu mãi mà chúng tôi chưa đáp ứng tốt? Dù là lý do gì, rất mong ${sal} chia sẻ thẳng thắn để chúng tôi có cơ hội lắng nghe, cải thiện và phục vụ ${sal} tốt hơn trong thời gian tới.
+
+Chúng tôi luôn sẵn sàng đồng hành, hỗ trợ ${sal} và mong muốn tiếp tục được là đối tác tin cậy, gắn bó lâu dài trên chặng đường phát triển sắp tới.
+
+Rất mong sớm nhận được phản hồi từ ${sal}.
+
+Trân trọng cảm ơn và kính chào,
+${signer}
+
+${_letterPS}`
+      );
+    }
+
+    // Default: formal — trang trọng
+    return (
+`Kính gửi ${sal} ${cleanName},
+
+Trước hết, chúng tôi xin chân thành cảm ơn ${sal} đã tin tưởng và đồng hành cùng chúng tôi trong suốt thời gian qua.
+
+Qua rà soát dữ liệu hợp tác kỳ này, chúng tôi nhận thấy ${sal} chưa có đơn đặt hàng mới từ bên chúng tôi. Với tư cách là đối tác đã gắn bó, chúng tôi không khỏi băn khoăn và rất mong được hiểu rõ nguyên nhân để kịp thời điều chỉnh.
+
+Dưới đây là danh sách các sản phẩm ${sal} từng tin dùng trong các kỳ trước:
+
+${productList}
+
+Chúng tôi rất mong ${sal} dành chút thời gian chia sẻ: liệu có khó khăn hay vướng mắc nào liên quan đến giá cả, chất lượng sản phẩm, thời gian giao hàng hay dịch vụ hậu mãi đã khiến ${sal} tạm dừng hợp tác? Chúng tôi cam kết lắng nghe và cải thiện để phục vụ ${sal} ngày một tốt hơn.
+
+Chúng tôi trân trọng mong muốn tiếp tục được đồng hành cùng ${sal} trong chặng đường sắp tới, đồng thời sẵn sàng mở rộng hợp tác trên cơ sở đôi bên cùng có lợi, hướng tới sự phát triển bền vững và lâu dài.
+
+Rất mong sớm nhận được phản hồi từ ${sal}.
+
+Trân trọng cảm ơn và kính chào,
+${signer}
+
+${_letterPS}`
+    );
+  }
+
+  // ====== DROPPED-PRODUCTS LETTERS (KH vẫn còn mua, chỉ bỏ một số SP) ======
+  if (tone === 'brief') {
+    // Ngắn gọn — súc tích, đi thẳng vào việc
+    return (
+`Kính gửi ${sal} ${cleanName},
+
+Cảm ơn ${sal} đã đồng hành cùng chúng tôi thời gian qua.
+
+Qua rà soát, chúng tôi nhận thấy kỳ này ${sal} tạm chưa đặt ${countText} sản phẩm từng hợp tác:
+
+${productList}
+
+Rất mong ${sal} cân nhắc tiếp tục sử dụng. Nếu có bất kỳ vướng mắc nào về giá, chất lượng hay dịch vụ, xin chia sẻ để chúng tôi phục vụ tốt hơn.
+
+Mong tiếp tục hợp tác bền vững cùng ${sal}.
+
+Trân trọng cảm ơn,
+${signer}
+
+${_letterPS}`
+    );
+  }
+
+  if (tone === 'friendly') {
+    // Thân thiện — ấm áp, gần gũi
+    return (
+`Kính gửi ${sal} ${cleanName},
+
+Lời đầu tiên, chúng tôi xin gửi đến ${sal} lời chào trân trọng và lời cảm ơn chân thành vì đã luôn tin tưởng, đồng hành cùng chúng tôi trong suốt thời gian qua.
+
+Trong quá trình rà soát hoạt động gần đây, chúng tôi nhận thấy kỳ này ${sal} chưa tiếp tục đặt một số sản phẩm từng rất được ưa chuộng trước đây, cụ thể:
+
+${productList}
+
+Chúng tôi rất trân trọng sự hợp tác lâu dài của ${sal}, nên muốn chủ động hỏi thăm: liệu có điều gì khiến ${sal} tạm dừng các sản phẩm này không? Nếu có bất kỳ vấn đề nào về giá cả, chất lượng, thời gian giao hàng hay dịch vụ hậu mãi, rất mong ${sal} chia sẻ thẳng thắn để chúng tôi có cơ hội cải thiện và phục vụ ${sal} tốt hơn.
+
+Chúng tôi cam kết luôn nỗ lực đồng hành cùng ${sal}, đồng thời mong muốn được mở rộng hợp tác, mang đến những giá trị thiết thực và bền vững trong chặng đường phát triển sắp tới.
+
+Rất mong nhận được phản hồi từ ${sal}.
+
+Trân trọng cảm ơn và kính chào,
+${signer}
+
+${_letterPS}`
+    );
+  }
+
+  // Default: formal — trang trọng, chuyên nghiệp
+  return (
+`Kính gửi ${sal} ${cleanName},
+
+Trước hết, chúng tôi xin chân thành cảm ơn ${sal} đã tin tưởng và đồng hành cùng chúng tôi trong thời gian qua.
+
+Qua rà soát dữ liệu hợp tác gần đây, chúng tôi nhận thấy trong kỳ này ${sal} chưa tiếp tục đặt ${countText} sản phẩm mà ${sal} từng sử dụng, cụ thể như sau:
+
+${productList}
+
+Với mong muốn phục vụ ${sal} một cách tốt nhất, chúng tôi rất mong ${sal} dành chút thời gian xem xét lại nhu cầu đối với các sản phẩm nêu trên. Nếu có bất kỳ khó khăn, vướng mắc nào liên quan đến giá cả, chất lượng, thời gian giao hàng hay dịch vụ đi kèm, chúng tôi rất mong được ${sal} chia sẻ để kịp thời điều chỉnh, đáp ứng tốt hơn yêu cầu của ${sal}.
+
+Chúng tôi cam kết luôn đồng hành, hỗ trợ ${sal} trong suốt quá trình hợp tác, đồng thời mong muốn tiếp tục mở rộng quan hệ hợp tác bền vững, lâu dài và mang lại lợi ích thiết thực cho cả hai bên.
+
+Rất mong sớm nhận được phản hồi từ ${sal}.
+
+Trân trọng cảm ơn và kính chào,
+${signer}
+
+${_letterPS}`
+  );
+}
+
+function copyEmailToClipboard() {
+  const box = document.getElementById('emailContentBox');
+  const text = box.value;
+  if (!text.trim()) {
+    showToast('Chưa có nội dung để sao chép', 'warning');
+    return;
+  }
+  // Use modern clipboard API with fallback
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('✅ Đã sao chép thư vào clipboard', 'success');
+    }).catch(() => {
+      _fallbackCopy(box);
+    });
+  } else {
+    _fallbackCopy(box);
+  }
+}
+
+function _fallbackCopy(box) {
+  try {
+    box.select();
+    box.setSelectionRange(0, 99999);
+    document.execCommand('copy');
+    box.setSelectionRange(0, 0);
+    box.blur();
+    showToast('✅ Đã sao chép thư', 'success');
+  } catch (e) {
+    showToast('Không thể sao chép tự động. Hãy chọn và Ctrl+C.', 'error');
+  }
+}
+
+function downloadEmailAsTxt() {
+  const text = document.getElementById('emailContentBox').value;
+  if (!text.trim()) {
+    showToast('Chưa có nội dung để tải', 'warning');
+    return;
+  }
+  // Prefix with UTF-8 BOM so Vietnamese text displays correctly in Notepad etc.
+  const BOM = '\uFEFF';
+  const blob = new Blob([BOM + text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  // Sanitize customer name for filename
+  const safeName = (_emailState.customerName || 'khach-hang')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .substring(0, 40) || 'khach-hang';
+  const date = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `thu-moi-${safeName}-${date}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('📥 Đã tải thư dưới dạng .txt', 'success');
+}
+
+// Close modal when clicking outside it or pressing Escape
+document.getElementById('emailModalOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'emailModalOverlay') closeEmailModal();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.getElementById('emailModalOverlay').classList.contains('show')) {
+    closeEmailModal();
+  }
+});
+
+// Sender name — debounced update & persist to localStorage
+document.getElementById('emailSenderName').addEventListener('input', (e) => {
+  const name = e.target.value;
+  _emailState.senderName = name;
+  _saveSenderName(name.trim());
+  if (_senderDebounceTimer) clearTimeout(_senderDebounceTimer);
+  _senderDebounceTimer = setTimeout(() => {
+    // Skip re-render if modal closed, or if AI is still typing the initial pass
+    const overlay = document.getElementById('emailModalOverlay');
+    if (!overlay.classList.contains('show')) return;
+    if (_emailState.isTyping) return;
+    _startAIComposition(false); // instant update, no animation while typing a name
+  }, 400);
 });
 </script>
 </body>
