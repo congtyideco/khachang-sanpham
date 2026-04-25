@@ -1116,9 +1116,14 @@ td {
 /* === FILE 03 UPLOAD CARD === */
 .upload-grid-3 {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 16px;
   margin-bottom: 20px;
+}
+@media (max-width: 768px) {
+  .upload-grid-3 {
+    grid-template-columns: 1fr;
+  }
 }
 .upload-card-3 {
   background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
@@ -1127,6 +1132,92 @@ td {
   padding: 20px;
   box-shadow: var(--shadow-sm);
   transition: all 0.2s;
+}
+/* Update card variant — purple/pink theme to distinguish from File 3 */
+.upload-card-update {
+  background: linear-gradient(135deg, #faf5ff, #fdf2f8);
+  border: 1.5px dashed rgba(168,85,247,0.45);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
+}
+.upload-card-update.loaded {
+  border-color: #a855f7;
+  border-style: solid;
+  background: linear-gradient(135deg, #f3e8ff, #fae8ff);
+}
+.dropzone-update {
+  border: 2px dashed rgba(168,85,247,0.4);
+  border-radius: 10px;
+  padding: 22px 18px;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(255,255,255,0.5);
+  transition: all 0.2s;
+  position: relative;
+}
+.dropzone-update:hover {
+  border-color: #a855f7;
+  background: rgba(255,255,255,0.85);
+}
+.dropzone-update input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.file-ok-update {
+  display: none;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: #f3e8ff;
+  border: 1px solid rgba(168,85,247,0.3);
+  border-radius: 8px;
+  font-size: 12px;
+  color: #6b21a8;
+  align-items: center;
+  gap: 8px;
+}
+.file-ok-update.show { display: flex; }
+.btn-del-update {
+  background: transparent;
+  border: 1px solid rgba(168,85,247,0.4);
+  color: #7c3aed;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.btn-del-update:hover { background: rgba(168,85,247,0.1); }
+.update-stats-note {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #faf5ff, #fdf2f8);
+  border: 1px dashed rgba(168,85,247,0.4);
+  border-radius: 8px;
+  font-size: 11.5px;
+  color: #6b21a8;
+  display: none;
+}
+.update-stats-note.show { display: block; }
+.update-stats-note strong { color: #7c3aed; }
+
+/* Update button — distinct purple gradient */
+.btn-update {
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  color: white;
+  border: none;
+}
+.btn-update:hover:not(:disabled) {
+  background: linear-gradient(135deg, #9333ea, #db2777);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(168,85,247,0.4);
+}
+.btn-update:disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
 }
 .upload-card-3.loaded {
   border-color: var(--primary);
@@ -1430,6 +1521,47 @@ td {
   position: relative;
   overflow: hidden;
 }
+
+/* === STAFF NOTE BUTTON (inside each row with suggested products) === */
+.suggest-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.btn-staff-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #10b981, #14b8a6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(16,185,129,0.25);
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.btn-staff-note::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  transition: left 0.6s;
+}
+.btn-staff-note:hover::before { left: 100%; }
+.btn-staff-note:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16,185,129,0.4);
+}
+.btn-staff-note:active { transform: translateY(0); }
 .btn-ai-email::before {
   content: '';
   position: absolute;
@@ -1884,11 +2016,33 @@ td {
         </div>
       </div>
     </div>
+
+    <!-- FILE 04: CẬP NHẬT thêm dữ liệu vào Phân Tích 1 -->
+    <div class="upload-card-update" id="cardFileUpdate">
+      <div class="upload-card-tag" style="color:#a855f7;">📁 FILE 04 · TÙY CHỌN</div>
+      <div class="upload-card-title" style="color:#7c3aed;">🔄 CẬP NHẬT thêm dữ liệu vào kết quả</div>
+      <div class="dropzone-update" id="dropzoneFileUpdate">
+        <input type="file" id="fileUpdate" accept=".xlsx,.xls">
+        <div class="dropzone-icon" style="font-size:28px;margin-bottom:8px;">➕</div>
+        <div class="dropzone-text" style="font-size:13px;color:#475569;">
+          <strong style="color:#a855f7;">Nhấn hoặc kéo thả</strong><br>
+          File Excel có cột <strong>Khách hàng</strong> + <strong>Sản phẩm</strong> (+ SĐT) → bổ sung SP/KH mới vào Phân Tích 1
+        </div>
+      </div>
+      <div class="file-ok-update" id="fileUpdateOk">
+        ✅ <span id="updateFileName" style="flex:1;font-family:monospace;font-size:11px;"></span>
+        <button class="btn-del-update" onclick="clearUpdateFile()">🗑️ Xóa</button>
+      </div>
+      <div class="update-stats-note" id="updateStatsNote">
+        <span id="updateStatsText">Đã đọc file — bấm <strong>CẬP NHẬT</strong> để bổ sung dữ liệu</span>
+      </div>
+    </div>
   </div>
 
   <div class="controls">
     <button class="btn btn-primary" id="btnAnalyze" disabled>⚡ Phân Tích Lần 1</button>
     <button class="btn btn-analyze2 btn" id="btnAnalyze2" disabled style="display:none;">🔍 Phân Tích Lần 2</button>
+    <button class="btn btn-update" id="btnUpdateData" disabled style="display:none;">🔄 CẬP NHẬT Dữ Liệu</button>
     <div class="divider"></div>
     <button class="btn btn-success" id="btnSave" style="display: none;">💾 Lưu (Firebase + Local)</button>
     <button class="btn btn-secondary" id="btnLoad">☁️ Tải Dữ Liệu</button>
@@ -2029,6 +2183,44 @@ td {
         <span>📥</span><span>Tải .txt</span>
       </button>
       <button class="email-btn email-btn-primary" id="btnCopyEmail" onclick="copyEmailToClipboard()">
+        <span>📋</span><span>Sao chép</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== STAFF NOTE MODAL (Soạn Nhắc NV) ==================== -->
+<div class="email-modal-overlay" id="staffNoteModalOverlay">
+  <div class="email-modal">
+    <div class="email-modal-header" style="background: linear-gradient(135deg, #10b981, #14b8a6);">
+      <div>
+        <div class="email-modal-title">
+          <span class="ai-icon">📞</span>
+          <span>Soạn Nhắc Nhân Viên</span>
+        </div>
+        <div class="email-modal-sub">Tin nhắn nhắc NV gọi điện trao đổi về nhóm SP chưa tương tác</div>
+      </div>
+      <button class="email-modal-close" onclick="closeStaffNoteModal()" title="Đóng">✕</button>
+    </div>
+    <div class="email-modal-body">
+      <div class="email-customer-info" id="staffNoteCustomerInfo">
+        <!-- Filled dynamically -->
+      </div>
+      <div class="email-typing-indicator" id="staffNoteTypingIndicator" style="background: linear-gradient(135deg, #ecfdf5, #d1fae5); color: #059669;">
+        <span class="ai-icon" style="animation: sparkle 2s ease-in-out infinite;">✨</span>
+        <span>AI đang soạn tin nhắn</span>
+        <span class="dots"><span style="background:#10b981;"></span><span style="background:#10b981;"></span><span style="background:#10b981;"></span></span>
+      </div>
+      <textarea class="email-content-box" id="staffNoteContentBox" placeholder="Nội dung tin nhắn sẽ hiển thị tại đây..." spellcheck="false"></textarea>
+    </div>
+    <div class="email-modal-footer">
+      <button class="email-btn email-btn-regen" id="btnRegenStaffNote" onclick="regenerateStaffNote()" style="color:#059669;border-color:rgba(16,185,129,0.4);">
+        <span>🔄</span><span>Soạn lại</span>
+      </button>
+      <button class="email-btn email-btn-secondary" onclick="downloadStaffNoteAsTxt()">
+        <span>📥</span><span>Tải .txt</span>
+      </button>
+      <button class="email-btn email-btn-primary" id="btnCopyStaffNote" onclick="copyStaffNoteToClipboard()" style="background: linear-gradient(135deg, #10b981, #14b8a6);">
         <span>📋</span><span>Sao chép</span>
       </button>
     </div>
@@ -2855,15 +3047,32 @@ function renderTable(data) {
       </div>`;
     }
     
+    // Build the staff note button HTML once — used in both the "no catalog" and "has suggestions" branches.
+    // The button is shown whenever the customer has at least one product (own or suggested) to discuss.
+    const staffNoteBtnHtml = (customer.products && customer.products.length > 0) || (suggestions && suggestions.length > 0)
+      ? `<button class="btn-staff-note" onclick="openStaffNoteModal('${escapeHtml(customer.key)}')" title="Soạn tin nhắn nhắc nhân viên gọi điện trao đổi với khách">
+          <span class="ai-icon">📞</span>
+          <span>Soạn Nhắc NV</span>
+        </button>`
+      : '';
+    
     if (suggestions === null) {
-      suggestContent += '<span class="suggest-no-catalog">— Chưa có danh mục —</span>';
+      // No catalog uploaded — show explanation + staff note button (uses customer's own products as discussion topic)
+      suggestContent += `<div class="suggest-actions">
+        <span class="suggest-no-catalog">— Chưa có danh mục —</span>
+        ${staffNoteBtnHtml}
+      </div>`;
     } else if (suggestions.length === 0) {
+      // Customer bought everything — show success badge, no button needed
       suggestContent += '<span class="suggest-empty">✅ Đã mua tất cả sản phẩm trong danh mục</span>';
     } else {
       const dropdownId = `dropdown_${customer.key}`;
       suggestContent += `
-        <div class="suggest-trigger" data-dropdown="${dropdownId}" onclick="event.stopPropagation(); toggleSuggestDropdown('${dropdownId}')">
-          💡 Gợi ý <span class="suggest-badge">${suggestions.length}</span> sản phẩm ▼
+        <div class="suggest-actions">
+          <div class="suggest-trigger" data-dropdown="${dropdownId}" onclick="event.stopPropagation(); toggleSuggestDropdown('${dropdownId}')">
+            💡 Gợi ý <span class="suggest-badge">${suggestions.length}</span> sản phẩm ▼
+          </div>
+          ${staffNoteBtnHtml}
         </div>
         <div id="${dropdownId}" class="suggest-dropdown">
           <div class="suggest-header">
@@ -3329,6 +3538,8 @@ function performDeleteAll() {
     exportData = null;
     customerData = null;
     compareData = null;
+    updateData = null;
+    _updateFileMeta = { name: '', custCol: -1, prodCol: -1, phoneCol: -1, headerIdx: 0, rowCount: 0 };
     period2Products = {};
     period2MissingCustomers = {};
     period2NewCustomers = [];
@@ -3338,12 +3549,17 @@ function performDeleteAll() {
     document.getElementById('cardExport').classList.remove('loaded');
     document.getElementById('cardCustomer').classList.remove('loaded');
     document.getElementById('cardFile3').classList.remove('loaded');
+    document.getElementById('cardFileUpdate').classList.remove('loaded');
     document.getElementById('fileExportOk').classList.remove('show');
     document.getElementById('fileCustomerOk').classList.remove('show');
     document.getElementById('fileCompareOk').classList.remove('show');
+    document.getElementById('fileUpdateOk').classList.remove('show');
+    document.getElementById('updateStatsNote').classList.remove('show');
     document.getElementById('btnAnalyze').disabled = true;
     document.getElementById('btnAnalyze2').disabled = true;
     document.getElementById('btnAnalyze2').style.display = 'none';
+    document.getElementById('btnUpdateData').disabled = true;
+    document.getElementById('btnUpdateData').style.display = 'none';
     document.getElementById('btnSave').style.display = 'none';
     document.getElementById('btnExport').style.display = 'none';
     document.getElementById('catalogClearWrap').classList.remove('show');
@@ -3544,6 +3760,252 @@ function processCompareFile(file) {
   };
   reader.readAsArrayBuffer(file);
 }
+
+// ==================== FILE 04 UPLOAD: CẬP NHẬT ====================
+let updateData = null; // raw parsed rows from update file
+let _updateFileMeta = { name: '', custCol: -1, prodCol: -1, phoneCol: -1, headerIdx: 0, rowCount: 0 };
+
+function clearUpdateFile() {
+  updateData = null;
+  _updateFileMeta = { name: '', custCol: -1, prodCol: -1, phoneCol: -1, headerIdx: 0, rowCount: 0 };
+  document.getElementById('fileUpdateOk').classList.remove('show');
+  document.getElementById('cardFileUpdate').classList.remove('loaded');
+  document.getElementById('updateFileName').textContent = '';
+  document.getElementById('fileUpdate').value = '';
+  document.getElementById('updateStatsNote').classList.remove('show');
+  document.getElementById('btnUpdateData').style.display = 'none';
+  document.getElementById('btnUpdateData').disabled = true;
+  showToast('Đã xóa file cập nhật', 'warning');
+}
+
+function processUpdateFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const workbook = XLSX.read(e.target.result, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false });
+      
+      if (!rows || rows.length < 2) {
+        showToast('File trống hoặc không có dữ liệu', 'error');
+        return;
+      }
+      
+      // Detect header row (look for "Khách hàng" within first 8 rows)
+      let headerIdx = 0;
+      for (let i = 0; i < Math.min(8, rows.length); i++) {
+        if (rows[i] && rows[i].some(c => toLower(String(c)).includes('khách'))) {
+          headerIdx = i; break;
+        }
+      }
+      const hdrRow = (rows[headerIdx] || []).map(c => normalize(String(c)));
+      
+      // Detect columns
+      let custCol = hdrRow.findIndex(c => toLower(c).includes('khách'));
+      let prodCol = hdrRow.findIndex(c => toLower(c).includes('sản phẩm') && !toLower(c).includes('mã'));
+      if (prodCol < 0) prodCol = hdrRow.findIndex(c => toLower(c).includes('sản phẩm') || toLower(c).includes('product'));
+      let phoneCol = hdrRow.findIndex(c => /điện thoại|phone|sđt|sdt/i.test(c));
+      
+      // Fallbacks based on common Vietnamese sales export format
+      if (custCol < 0) custCol = 3;
+      if (prodCol < 0) prodCol = 5;
+      
+      if (custCol < 0 || prodCol < 0) {
+        showToast('Không tìm được cột Khách hàng / Sản phẩm. Kiểm tra lại file.', 'error');
+        return;
+      }
+      
+      // Quick stats
+      const custSet = new Set();
+      const prodSet = new Set();
+      for (let i = headerIdx + 1; i < rows.length; i++) {
+        const r = rows[i]; if (!r || !r.length) continue;
+        const cn = normalize(String(r[custCol] || ''));
+        const pn = extractProductName(normalize(String(r[prodCol] || '')));
+        if (cn && !/^(tổng|total|nan)$/i.test(cn)) custSet.add(cn);
+        if (pn) prodSet.add(pn);
+      }
+      
+      updateData = rows;
+      _updateFileMeta = {
+        name: file.name,
+        custCol,
+        prodCol,
+        phoneCol,
+        headerIdx,
+        rowCount: rows.length - headerIdx - 1
+      };
+      
+      // UI updates
+      document.getElementById('fileUpdateOk').classList.add('show');
+      document.getElementById('updateFileName').innerHTML = 
+        `<strong>${escapeHtml(file.name)}</strong> · ${rows.length - headerIdx - 1} dòng`;
+      document.getElementById('cardFileUpdate').classList.add('loaded');
+      
+      const phoneInfo = phoneCol >= 0 ? ` · Cột ${phoneCol+1}=SĐT` : ' · không có cột SĐT';
+      document.getElementById('updateStatsNote').classList.add('show');
+      document.getElementById('updateStatsText').innerHTML = 
+        `📊 <strong>${custSet.size}</strong> KH · <strong>${prodSet.size}</strong> SP · Cột ${custCol+1}=KH · Cột ${prodCol+1}=SP${phoneInfo}<br>` +
+        `${analysisResult.length > 0 ? '✨ Bấm <strong>CẬP NHẬT Dữ Liệu</strong> để bổ sung vào kết quả Phân Tích 1' : '⚠️ Hãy chạy <strong>Phân Tích Lần 1</strong> trước, rồi mới cập nhật'}`;
+      
+      // Show update button
+      document.getElementById('btnUpdateData').style.display = 'inline-flex';
+      document.getElementById('btnUpdateData').disabled = !(analysisResult.length > 0);
+      
+      addLog('success', `📁 File CẬP NHẬT: ${file.name} | ${rows.length - headerIdx - 1} dòng | ${custSet.size} KH | ${prodSet.size} SP`);
+      addLog('info', `   Cột KH = ${custCol+1} ("${hdrRow[custCol]}") | Cột SP = ${prodCol+1} ("${hdrRow[prodCol]}")${phoneCol >= 0 ? ` | Cột SĐT = ${phoneCol+1}` : ''}`);
+      
+      if (analysisResult.length > 0) {
+        showToast(`✅ Đã đọc file: ${custSet.size} KH, ${prodSet.size} SP. Bấm CẬP NHẬT để bổ sung.`, 'success');
+      } else {
+        showToast(`Đã đọc file. Hãy chạy Phân Tích Lần 1 trước khi cập nhật.`, 'warning');
+      }
+    } catch(err) {
+      showToast('Lỗi đọc file cập nhật: ' + err.message, 'error');
+      addLog('error', 'Lỗi đọc file cập nhật: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// === Run the actual UPDATE merge into analysisResult ===
+function runUpdateData() {
+  if (!updateData || analysisResult.length === 0) {
+    showToast('Cần upload file cập nhật và chạy Phân Tích Lần 1 trước', 'warning');
+    return;
+  }
+  
+  showLoading('Đang cập nhật dữ liệu...');
+  
+  setTimeout(() => {
+    try {
+      const { custCol, prodCol, phoneCol, headerIdx } = _updateFileMeta;
+      const threshold = parseInt(document.getElementById('thresholdSlider').value, 10);
+      
+      // Group rows from update file by customer
+      // Map: normalizedKey -> { displayName, products: Set, phone: '' }
+      const updateMap = new Map();
+      for (let i = headerIdx + 1; i < updateData.length; i++) {
+        const r = updateData[i]; if (!r || !r.length) continue;
+        const rawCust = normalize(String(r[custCol] || ''));
+        const rawProd = normalize(String(r[prodCol] || ''));
+        if (!rawCust || /^(tổng|total|nan)$/i.test(rawCust)) continue;
+        const prodName = extractProductName(rawProd);
+        if (!prodName) continue;
+        
+        const normKey = normalizeCompanyName(rawCust);
+        if (!normKey) continue;
+        
+        let entry = updateMap.get(normKey);
+        if (!entry) {
+          entry = { display: rawCust, products: new Set(), phone: '' };
+          updateMap.set(normKey, entry);
+        }
+        entry.products.add(prodName);
+        if (phoneCol >= 0 && !entry.phone) {
+          const phoneVal = normalize(String(r[phoneCol] || ''));
+          if (phoneVal && /\d/.test(phoneVal)) entry.phone = phoneVal;
+        }
+      }
+      
+      // Stats
+      let existingMatched = 0;       // existing customer matched
+      let newProductsAdded = 0;       // products newly added to existing customers
+      let newCustomersAdded = 0;       // brand new customers
+      let newCustomerProducts = 0;    // total products from new customers
+      let phonesUpdated = 0;          // phones added/updated for existing customers
+      const exampleAdds = [];          // first few examples for log
+      
+      for (const [normKey, entry] of updateMap) {
+        const match = findBestCustomerMatch(entry.display, threshold);
+        
+        if (match) {
+          // === EXISTING CUSTOMER → add new products & phone ===
+          existingMatched++;
+          const customer = match.customer;
+          const existingKeys = new Set((customer.products || []).map(p => productKey(p)));
+          const newProds = [...entry.products].filter(p => !existingKeys.has(productKey(p)));
+          
+          if (newProds.length > 0) {
+            customer.products = [...customer.products, ...newProds].sort((a, b) => a.localeCompare(b, 'vi'));
+            newProductsAdded += newProds.length;
+            if (exampleAdds.length < 5) {
+              exampleAdds.push(`  • ${customer.name} (khớp ${match.score}%) → +${newProds.length} SP: ${newProds.slice(0, 2).join(', ')}${newProds.length > 2 ? '...' : ''}`);
+            }
+          }
+          
+          // Update phone if customer didn't have one
+          if (entry.phone && !customer.phone) {
+            customer.phone = entry.phone;
+            phonesUpdated++;
+          }
+        } else {
+          // === NEW CUSTOMER → add to analysisResult ===
+          const newCust = {
+            key: generateKey(entry.display),
+            name: entry.display,
+            phone: entry.phone || '',
+            products: [...entry.products].sort((a, b) => a.localeCompare(b, 'vi'))
+          };
+          analysisResult.push(newCust);
+          newCustomersAdded++;
+          newCustomerProducts += newCust.products.length;
+          if (exampleAdds.length < 5) {
+            exampleAdds.push(`  🆕 ${newCust.name} (mới) → ${newCust.products.length} SP, SĐT: ${newCust.phone || '—'}`);
+          }
+        }
+      }
+      
+      // Sort and re-render
+      analysisResult.sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+      renderTable(analysisResult);
+      updateStatsFromResult();
+      
+      hideLoading();
+      
+      const summary = `✅ Cập nhật xong: ${existingMatched} KH cũ khớp · ${newProductsAdded} SP mới thêm · ${newCustomersAdded} KH mới · ${phonesUpdated} SĐT bổ sung`;
+      showToast(summary, 'success');
+      addLog('success', summary);
+      
+      if (exampleAdds.length > 0) {
+        addLog('info', '📋 Ví dụ thay đổi:\n' + exampleAdds.join('\n'));
+      }
+      
+      // Auto-clear update file after successful merge to avoid double-applying
+      clearUpdateFile();
+      
+    } catch(err) {
+      hideLoading();
+      showToast('Lỗi cập nhật: ' + err.message, 'error');
+      addLog('error', '❌ Lỗi cập nhật: ' + err.message);
+    }
+  }, 50);
+}
+
+// === Wire up FILE 04 dropzone & button ===
+const dropzoneUpdate = document.getElementById('dropzoneFileUpdate');
+const fileInputUpdate = document.getElementById('fileUpdate');
+
+dropzoneUpdate.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropzoneUpdate.style.borderColor = '#a855f7';
+  dropzoneUpdate.style.background = 'rgba(255,255,255,0.85)';
+});
+dropzoneUpdate.addEventListener('dragleave', () => {
+  dropzoneUpdate.style.borderColor = 'rgba(168,85,247,0.4)';
+  dropzoneUpdate.style.background = 'rgba(255,255,255,0.5)';
+});
+dropzoneUpdate.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzoneUpdate.style.borderColor = 'rgba(168,85,247,0.4)';
+  dropzoneUpdate.style.background = 'rgba(255,255,255,0.5)';
+  if (e.dataTransfer.files[0]) processUpdateFile(e.dataTransfer.files[0]);
+});
+fileInputUpdate.addEventListener('change', () => {
+  if (fileInputUpdate.files[0]) processUpdateFile(fileInputUpdate.files[0]);
+});
+
+document.getElementById('btnUpdateData').addEventListener('click', runUpdateData);
 
 // ==================== ENHANCED CUSTOMER NAME MATCHING ====================
 // Remove common business prefixes for cleaner comparison
@@ -3833,11 +4295,15 @@ document.addEventListener('click', (e) => {
 // Hook analysis completion to enable Analyze 2 if FILE 03 exists
 document.getElementById('btnAnalyze').addEventListener('click', function() {
   runAnalysis();
-  // After analysis, if compareData already loaded, enable Analyze 2
+  // After analysis, enable Analyze 2 / Update buttons if their respective files are already loaded
   setTimeout(() => {
     if (compareData && analysisResult.length > 0) {
       document.getElementById('btnAnalyze2').style.display = 'inline-flex';
       document.getElementById('btnAnalyze2').disabled = false;
+    }
+    if (updateData && analysisResult.length > 0) {
+      document.getElementById('btnUpdateData').style.display = 'inline-flex';
+      document.getElementById('btnUpdateData').disabled = false;
     }
   }, 2000);
 });
@@ -4271,6 +4737,250 @@ document.getElementById('emailSenderName').addEventListener('input', (e) => {
     _startAIComposition(false); // instant update, no animation while typing a name
   }, 400);
 });
+
+// ==================== STAFF NOTE MODAL (Soạn Nhắc Nhân Viên) ====================
+let _staffNoteState = {
+  customerKey: null,
+  customerName: '',
+  phone: '',
+  suggestedProducts: [],
+  typingTimer: null,
+  isTyping: false
+};
+
+function openStaffNoteModal(customerKey) {
+  const customer = analysisResult.find(c => c.key === customerKey);
+  if (!customer) {
+    showToast('Không tìm thấy khách hàng', 'error');
+    return;
+  }
+  const suggestions = getSuggestionsForCustomer(customer);
+  
+  // Decide what list of products to discuss in the staff note:
+  //   - If catalog uploaded AND customer has missing products → use suggested (missing) products
+  //   - If catalog NOT uploaded → fall back to customer's own products (staff discusses what's been bought)
+  //   - Otherwise → bail out
+  let productList = [];
+  let mode = 'suggested'; // 'suggested' | 'owned'
+  if (suggestions && suggestions.length > 0) {
+    productList = [...suggestions];
+    mode = 'suggested';
+  } else if (suggestions === null && customer.products && customer.products.length > 0) {
+    productList = [...customer.products];
+    mode = 'owned';
+  } else {
+    showToast('Không có sản phẩm nào để soạn tin nhắn', 'warning');
+    return;
+  }
+  
+  _staffNoteState.customerKey = customerKey;
+  _staffNoteState.customerName = customer.name || 'Quý khách';
+  _staffNoteState.phone = customer.phone || '';
+  _staffNoteState.suggestedProducts = productList;
+  _staffNoteState.mode = mode;
+  
+  // Fill customer info
+  const infoEl = document.getElementById('staffNoteCustomerInfo');
+  const phoneHtml = customer.phone
+    ? `<span>📞 <strong>${escapeHtml(customer.phone)}</strong></span>`
+    : `<span style="color:var(--text-muted);">📞 Chưa có SĐT</span>`;
+  const productLabel = mode === 'suggested'
+    ? `💡 <strong>${productList.length}</strong> SP gợi ý`
+    : `📦 <strong>${productList.length}</strong> SP đã mua`;
+  infoEl.innerHTML = `
+    <span>👤 <strong>${escapeHtml(customer.name)}</strong></span>
+    <span style="color:var(--text-muted);">·</span>
+    ${phoneHtml}
+    <span style="color:var(--text-muted);">·</span>
+    <span>${productLabel}</span>
+  `;
+  
+  // Show modal
+  document.getElementById('staffNoteModalOverlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  
+  _startStaffNoteComposition();
+}
+
+function closeStaffNoteModal() {
+  document.getElementById('staffNoteModalOverlay').classList.remove('show');
+  document.body.style.overflow = '';
+  _stopStaffNoteTyping();
+}
+
+function regenerateStaffNote() {
+  _startStaffNoteComposition();
+}
+
+function _stopStaffNoteTyping() {
+  if (_staffNoteState.typingTimer) {
+    clearInterval(_staffNoteState.typingTimer);
+    _staffNoteState.typingTimer = null;
+  }
+  _staffNoteState.isTyping = false;
+  document.getElementById('staffNoteTypingIndicator').classList.remove('show');
+  document.getElementById('btnCopyStaffNote').disabled = false;
+  document.getElementById('btnRegenStaffNote').disabled = false;
+}
+
+function _startStaffNoteComposition() {
+  _stopStaffNoteTyping();
+  const note = _composeStaffNote(
+    _staffNoteState.customerName,
+    _staffNoteState.phone,
+    _staffNoteState.suggestedProducts,
+    _staffNoteState.mode || 'suggested'
+  );
+  
+  const box = document.getElementById('staffNoteContentBox');
+  const indicator = document.getElementById('staffNoteTypingIndicator');
+  const btnCopy = document.getElementById('btnCopyStaffNote');
+  const btnRegen = document.getElementById('btnRegenStaffNote');
+  
+  indicator.classList.add('show');
+  btnCopy.disabled = true;
+  btnRegen.disabled = true;
+  box.value = '';
+  _staffNoteState.isTyping = true;
+  
+  let i = 0;
+  const step = 3;
+  const interval = 12;
+  _staffNoteState.typingTimer = setInterval(() => {
+    if (i >= note.length) {
+      _stopStaffNoteTyping();
+      box.value = note;
+      box.scrollTop = 0;
+      return;
+    }
+    i = Math.min(i + step, note.length);
+    box.value = note.substring(0, i);
+    box.scrollTop = box.scrollHeight;
+  }, interval);
+}
+
+function _composeStaffNote(customerName, phone, products, mode) {
+  const cleanName = String(customerName || 'Khách hàng').trim();
+  const MAX_PRODUCTS = 15;
+  const truncated = products.length > MAX_PRODUCTS;
+  const productList = products.slice(0, MAX_PRODUCTS).map(p => `  • ${p}`).join('\n');
+  const moreNote = truncated ? `\n  …và ${products.length - MAX_PRODUCTS} sản phẩm khác (xem đầy đủ trong bảng)` : '';
+  const phoneLine = phone ? `📞 SĐT: ${phone}` : `📞 SĐT: (chưa có — bổ sung trước khi gọi)`;
+  
+  // Two modes:
+  //  - 'suggested': SP gợi ý (chưa mua kỳ này) → khuyến khích bán SP mới
+  //  - 'owned': SP khách đã mua (chưa upload danh mục) → hỏi thăm + bán thêm SP tương tự
+  if (mode === 'owned') {
+    return (
+`Chào em,
+
+Khách hàng: ${cleanName}
+${phoneLine}
+
+Em hãy gọi điện hỏi thăm khách về tình hình sử dụng nhóm sản phẩm khách đang đặt — đồng thời thăm dò nhu cầu mở rộng sang các SP khác công ty đang phân phối:
+
+${productList}${moreNote}
+
+Em hỏi thăm doanh số, độ ổn định, phản hồi từ người dùng cuối, và tạo cơ hội bàn thêm phương án (giá, công nợ, chương trình khuyến mãi) để khách tăng đơn hoặc thử thêm SP mới. Một vài gợi ý cho cuộc gọi:
+
+  • Hỏi thăm tốc độ bán nhóm SP trên (chậm/ổn/nhanh)
+  • Hỏi khách có quan tâm dòng SP nào tương tự không (giới thiệu thêm)
+  • Đề xuất bán thử / đổi trả linh hoạt vì là khách thân thuộc
+  • Ghi nhận phản hồi (giá, chất lượng, thời gian giao) để báo lại
+
+Cố lên em! Có gì khó báo anh/chị hỗ trợ ngay.
+
+Trân trọng,
+Bộ phận Kinh doanh`
+    );
+  }
+  
+  // Default: 'suggested' mode
+  return (
+`Chào em,
+
+Khách hàng: ${cleanName}
+${phoneLine}
+
+Em hãy gọi điện trao đổi thêm với khách về nhóm sản phẩm dưới đây — đây là những SP công ty đang phân phối nhưng khách CHƯA có tương tác đặt hàng trong kỳ:
+
+${productList}${moreNote}
+
+Em hỏi thăm tình hình kinh doanh, tạo nhu cầu, và bàn thêm phương án (giá, công nợ, chương trình) để khách lên đơn nhé. Một vài gợi ý cho cuộc gọi:
+
+  • Hỏi thăm doanh số nhóm SP tương tự khách đang bán
+  • Giới thiệu ngắn 2-3 SP nổi bật trong danh sách trên (đừng đọc cả list)
+  • Đề xuất bán thử / đổi trả linh hoạt vì là khách thân thuộc
+  • Ghi nhận phản hồi (giá, chất lượng, thời gian giao) để báo lại
+
+Cố lên em! Có gì khó báo anh/chị hỗ trợ ngay.
+
+Trân trọng,
+Bộ phận Kinh doanh`
+  );
+}
+
+function copyStaffNoteToClipboard() {
+  const box = document.getElementById('staffNoteContentBox');
+  const text = box.value;
+  if (!text.trim()) {
+    showToast('Chưa có nội dung để sao chép', 'warning');
+    return;
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('✅ Đã sao chép tin nhắn vào clipboard', 'success');
+    }).catch(() => {
+      _fallbackCopy(box);
+    });
+  } else {
+    _fallbackCopy(box);
+  }
+}
+
+function downloadStaffNoteAsTxt() {
+  const text = document.getElementById('staffNoteContentBox').value;
+  if (!text.trim()) {
+    showToast('Chưa có nội dung để tải', 'warning');
+    return;
+  }
+  const BOM = '\uFEFF';
+  const blob = new Blob([BOM + text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeName = (_staffNoteState.customerName || 'khach-hang')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .substring(0, 40) || 'khach-hang';
+  const date = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `nhac-nv-${safeName}-${date}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('📥 Đã tải tin nhắn dưới dạng .txt', 'success');
+}
+
+// Close staff note modal on overlay click / Escape
+document.getElementById('staffNoteModalOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'staffNoteModalOverlay') closeStaffNoteModal();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.getElementById('staffNoteModalOverlay').classList.contains('show')) {
+    closeStaffNoteModal();
+  }
+});
+
+// Make staff note functions globally available for inline onclick
+window.openStaffNoteModal = openStaffNoteModal;
+window.closeStaffNoteModal = closeStaffNoteModal;
+window.regenerateStaffNote = regenerateStaffNote;
+window.copyStaffNoteToClipboard = copyStaffNoteToClipboard;
+window.downloadStaffNoteAsTxt = downloadStaffNoteAsTxt;
+window.clearUpdateFile = clearUpdateFile;
 </script>
 </body>
 </html>
