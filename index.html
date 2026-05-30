@@ -706,6 +706,30 @@ td {
   color: var(--text-muted);
 }
 
+/* Contact person input */
+.contact-input {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12.5px;
+  background: transparent;
+  outline: none;
+  transition: all 0.15s;
+}
+.contact-input:hover {
+  border-color: var(--border-dark);
+  background: var(--surface-hover);
+}
+.contact-input:focus {
+  border-color: var(--secondary);
+  background: white;
+}
+.contact-input.has-contact { color: var(--text); }
+.contact-input.no-contact { color: var(--text-muted); }
+.col-contact { min-width: 150px; }
+
 /* Product Tags */
 .products-wrapper {
   display: flex;
@@ -1873,6 +1897,234 @@ td {
   .email-modal-footer { padding: 12px 16px; }
 }
 
+/* === MISSING SEARCH BTN === */
+.btn-missing-search {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: #fff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(124,58,237,0.35);
+}
+.btn-missing-search:hover {
+  background: linear-gradient(135deg, #6d28d9, #5b21b6);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(124,58,237,0.45);
+}
+
+/* === MISSING SEARCH MODAL === */
+.missing-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1100;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.missing-modal-overlay.show { display: flex; }
+.missing-modal {
+  background: var(--surface);
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  width: 100%;
+  max-width: 620px;
+  max-height: 92vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+}
+.missing-modal-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+}
+.missing-modal-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #5b21b6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.missing-modal-close {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(124,58,237,0.1);
+  color: #6d28d9;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.missing-modal-close:hover { background: rgba(124,58,237,0.2); }
+.missing-modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.missing-search-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-light);
+  margin-bottom: 6px;
+}
+.missing-search-hint {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.missing-search-wrap {
+  position: relative;
+}
+.missing-search-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 2px solid #c4b5fd;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  background: #faf5ff;
+  color: var(--text);
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+.missing-search-input:focus {
+  border-color: #7c3aed;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+}
+.missing-autocomplete {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: var(--surface);
+  border: 1px solid #c4b5fd;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 200;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.missing-autocomplete.show { display: block; }
+.missing-ac-item {
+  padding: 9px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text);
+  border-bottom: 1px solid #f3f0ff;
+  transition: background 0.15s;
+}
+.missing-ac-item:last-child { border-bottom: none; }
+.missing-ac-item:hover, .missing-ac-item.selected { background: #ede9fe; color: #5b21b6; font-weight: 500; }
+.missing-ac-highlight { color: #7c3aed; font-weight: 700; }
+.missing-ac-empty {
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+}
+.missing-result-info {
+  display: none;
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+  border: 1px solid #c4b5fd;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #5b21b6;
+  font-weight: 600;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.missing-result-info.show { display: flex; }
+.missing-result-count {
+  background: #7c3aed;
+  color: #fff;
+  border-radius: 100px;
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+.missing-result-preview {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fafafa;
+  padding: 8px;
+}
+.missing-result-preview.show { display: flex; }
+.missing-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 12px;
+}
+.missing-preview-name { font-weight: 600; flex: 1; color: var(--text); }
+.missing-preview-phone { font-family: 'JetBrains Mono', monospace; color: var(--text-light); min-width: 100px; }
+.missing-preview-contact { color: var(--text-muted); font-size: 11px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.missing-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+  background: #faf9ff;
+}
+.btn-missing-export {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 20px;
+  border: none; border-radius: 10px;
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(124,58,237,0.35);
+}
+.btn-missing-export:hover { background: linear-gradient(135deg, #6d28d9, #5b21b6); transform: translateY(-1px); }
+.btn-missing-export:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-missing-cancel {
+  padding: 10px 18px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-light);
+  font-size: 13px; cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.btn-missing-cancel:hover { background: var(--surface-hover); }
+.missing-no-analysis {
+  background: var(--warning-light);
+  border: 1px solid rgba(217,119,6,0.3);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: var(--warning);
+  font-weight: 500;
+  display: none;
+}
+.missing-no-analysis.show { display: block; }
+
 /* === TRASH CONFIRM PANEL === */
 .tag-delete-panel {
   position: fixed;
@@ -2047,6 +2299,7 @@ td {
     <button class="btn btn-success" id="btnSave" style="display: none;">💾 Lưu (Firebase + Local)</button>
     <button class="btn btn-secondary" id="btnLoad">☁️ Tải Dữ Liệu</button>
     <button class="btn btn-outline" id="btnExport" style="display: none;">📥 Xuất Excel</button>
+    <button class="btn btn-missing-search" id="btnMissingSearch" style="display: none;">🔎 Khách Không Lấy SP</button>
     <button class="btn btn-danger" id="btnDeleteAll">🗑️ Xóa Toàn Bộ</button>
     <div class="sim-control">
       <span>🔗 Ngưỡng ghép tên:</span>
@@ -2083,6 +2336,46 @@ td {
     <input type="text" id="searchInput" placeholder="Tìm kiếm tên khách hàng hoặc sản phẩm...">
   </div>
 
+  <!-- ==================== MISSING PRODUCT SEARCH MODAL ==================== -->
+  <div class="missing-modal-overlay" id="missingModalOverlay">
+    <div class="missing-modal">
+      <div class="missing-modal-header">
+        <div class="missing-modal-title">
+          🔎 Khách Hàng Không Lấy Sản Phẩm Trong Kỳ Này
+        </div>
+        <button class="missing-modal-close" onclick="closeMissingModal()">✕</button>
+      </div>
+      <div class="missing-modal-body">
+        <div class="missing-no-analysis" id="missingNoAnalysis">
+          ⚠️ Cần chạy <strong>Phân Tích Lần 2</strong> trước để có dữ liệu so sánh sản phẩm theo kỳ.
+        </div>
+        <div id="missingSearchSection">
+          <div class="missing-search-label">🔍 Tìm tên sản phẩm</div>
+          <div class="missing-search-wrap">
+            <input type="text" id="missingSearchInput" class="missing-search-input"
+              placeholder="Ví dụ: UVS CEPASILK, NYKOB ODT..."
+              autocomplete="off"
+              oninput="onMissingSearchInput(this.value)"
+              onkeydown="onMissingSearchKeydown(event)">
+            <div class="missing-autocomplete" id="missingAutocomplete"></div>
+          </div>
+          <div class="missing-search-hint">Gõ tên sản phẩm — gợi ý tự động từ danh mục đã lưu trong Firebase</div>
+          <div class="missing-result-info" id="missingResultInfo">
+            <span id="missingResultCount" class="missing-result-count">0</span>
+            <span id="missingResultText">khách hàng từng mua sản phẩm này nhưng <strong>kỳ này không lấy</strong></span>
+          </div>
+          <div class="missing-result-preview" id="missingResultPreview"></div>
+        </div>
+      </div>
+      <div class="missing-modal-footer">
+        <button class="btn-missing-cancel" onclick="closeMissingModal()">Đóng</button>
+        <button class="btn-missing-export" id="btnMissingExport" disabled onclick="exportMissingCustomers()">
+          📥 Xuất Excel
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="loading-overlay" id="loadingOverlay">
     <div class="spinner"></div>
     <p id="loadingText">Đang xử lý dữ liệu...</p>
@@ -2099,6 +2392,7 @@ td {
           <tr>
             <th class="col-stt">#</th>
             <th class="col-name">Tên Khách Hàng</th>
+            <th class="col-contact">Người Liên Hệ</th>
             <th class="col-phone">Số Điện Thoại</th>
             <th class="col-products">Sản Phẩm Đã Mua</th>
             <th class="col-suggest">💡 Gợi Ý Sản Phẩm</th>
@@ -2242,6 +2536,8 @@ const FIREBASE_CONFIG = {
 const LS_KEY = 'kh_data_v2';
 const CATALOG_KEY = 'sp_catalog_v1';
 const CATALOG_FIREBASE_KEY = 'catalog_products';
+const PERIOD2_FIREBASE_KEY = 'period2_analysis';   // lưu kết quả Phân Tích Lần 2 lên Firebase
+const PERIOD2_LS_KEY = 'kh_period2_v1';            // backup localStorage
 const DELETE_PASSWORD = 'minhtriet@2026';
 
 // ==================== GLOBAL VARIABLES ====================
@@ -2836,6 +3132,11 @@ function runAnalysis() {
       const headerRow = exportData[headerIndex].map(c => normalize(String(c)));
       let customerCol = headerRow.findIndex(c => toLower(c).includes('khách'));
       let productCol = headerRow.findIndex(c => toLower(c).includes('sản phẩm') || toLower(c).includes('product'));
+      // Detect contact person column: "Người nhận" / "Người liên hệ" / "NV" / "nhân viên"
+      let contactCol = headerRow.findIndex(c => toLower(c).includes('người nhận') || toLower(c).includes('người liên hệ') || toLower(c).includes('liên hệ'));
+      if (contactCol < 0) contactCol = headerRow.findIndex(c => toLower(c).includes('nhận') && !toLower(c).includes('đơn'));
+      // If file matches xuất kho format: STT|Mã phiếu|Đơn hàng|Khách hàng|Người nhận|... → col 4
+      if (contactCol < 0 && customerCol === 3) contactCol = 4;
       
       if (customerCol < 0) customerCol = 3;
       if (productCol < 0) productCol = 5;
@@ -2857,7 +3158,9 @@ function runAnalysis() {
         totalRecords++;
         
         if (!customerMap.has(customerKey)) {
-          customerMap.set(customerKey, { display: customerRaw, products: new Set() });
+          // Extract contact person from this row (Người nhận)
+          const contactPerson = contactCol >= 0 ? normalize(String(row[contactCol] || '')) : '';
+          customerMap.set(customerKey, { display: customerRaw, products: new Set(), contactPerson });
         }
         
         const product = extractProductName(productRaw);
@@ -2875,50 +3178,86 @@ function runAnalysis() {
       
       const custHeaderRow = customerData[custHeaderIndex].map(c => normalize(String(c)));
       let custNameCol = custHeaderRow.findIndex(c => toLower(c).includes('khách'));
-      let phoneCol = custHeaderRow.findIndex(c => toLower(c).includes('điện') || toLower(c).includes('phone') || toLower(c).includes('sđt'));
+      let phoneCol = custHeaderRow.findIndex(c => toLower(c).includes('điện') || toLower(c).includes('phone') || toLower(c).includes('sđt') || toLower(c).includes('sdt'));
+      // Detect "Người liên hệ" column in the customer list file
+      let custContactCol = custHeaderRow.findIndex(c => {
+        const cl = toLower(c);
+        return cl.includes('người liên hệ') || cl.includes('nguoi lien he') ||
+               cl.includes('liên hệ') || cl.includes('lien he') ||
+               cl.includes('người nhận') || cl.includes('nguoi nhan') ||
+               cl.includes('liên lạc') || cl.includes('lien lac') ||
+               cl.includes('contact') || cl.includes('người đại diện') ||
+               cl.includes('đại diện') || cl.includes('dai dien');
+      });
+      // Looser fallback: any header with "người"/"nguoi" that is not the customer-name column
+      if (custContactCol < 0) {
+        custContactCol = custHeaderRow.findIndex((c, idx) => {
+          const cl = toLower(c);
+          return idx !== custNameCol && (cl.includes('người') || cl.includes('nguoi'));
+        });
+      }
       
       if (custNameCol < 0) custNameCol = 2;
       if (phoneCol < 0) phoneCol = 4;
+      // Final fallback: contact person is in column D (index 3) per the standard customer-list layout
+      if (custContactCol < 0) {
+        custContactCol = 3;
+        addLog('warning', `📇 Không tìm thấy tiêu đề cột "Người liên hệ" → dùng mặc định cột D (cột 4). Tiêu đề các cột: ${custHeaderRow.map((c,i)=>`${i+1}:"${c}"`).join(' | ')}`);
+      }
       
+      addLog('info', `📇 File DS khách hàng: cột Tên KH=${custNameCol+1} ("${custHeaderRow[custNameCol]||'?'}") · cột Người liên hệ=${custContactCol+1} ("${custHeaderRow[custContactCol]||'(cột D mặc định)'}") · cột SĐT=${phoneCol+1} ("${custHeaderRow[phoneCol]||'?'}")`);
+      
+      // Build a lookup keyed by normalized customer name → { phone, contactPerson }
       const phoneList = [];
       for (let i = custHeaderIndex + 1; i < customerData.length; i++) {
         const row = customerData[i];
         if (!row) continue;
         const name = normalize(String(row[custNameCol] || ''));
         const phone = normalize(String(row[phoneCol] || ''));
-        if (name && phone && !['nan', 'NaN', '', 'null', 'undefined'].includes(phone)) {
-          phoneList.push({ key: toLower(name), phone: phone });
+        const contact = custContactCol >= 0 ? normalize(String(row[custContactCol] || '')) : '';
+        if (!name) continue;
+        const hasPhone = phone && !['nan', 'NaN', '', 'null', 'undefined'].includes(phone);
+        // keep the row even if no phone, as long as it carries a contact person
+        if (hasPhone || contact) {
+          phoneList.push({ key: toLower(name), phone: hasPhone ? phone : '', contact });
         }
       }
       
-      // Match customers with phone numbers
+      // Match customers with phone numbers AND contact person from the customer list file
       const results = [];
       let matchedPhones = 0;
       
       for (const [key, data] of customerMap) {
         let phone = '';
+        let contactFromList = '';
         
         const exactMatch = phoneList.find(p => p.key === key);
         if (exactMatch) {
           phone = exactMatch.phone;
+          contactFromList = exactMatch.contact;
         } else {
-          let bestScore = 0, bestPhone = '';
+          let bestScore = 0, bestPhone = '', bestContact = '';
           for (const p of phoneList) {
             const score = jaroWinkler(key, p.key);
             if (score > bestScore) {
               bestScore = score;
               bestPhone = p.phone;
+              bestContact = p.contact;
             }
           }
-          if (bestScore >= threshold) phone = bestPhone;
+          if (bestScore >= threshold) { phone = bestPhone; contactFromList = bestContact; }
         }
         
         if (phone) matchedPhones++;
+        
+        // Priority for contact person: from customer list file > from export file ("Người nhận")
+        const contactPerson = contactFromList || data.contactPerson || '';
         
         results.push({
           key: generateKey(data.display),
           name: data.display,
           phone: phone,
+          contactPerson: contactPerson,
           products: [...data.products].sort((a, b) => a.localeCompare(b, 'vi'))
         });
       }
@@ -2979,6 +3318,11 @@ function renderTable(data) {
     tdName.title = 'Nhấp để xóa khách hàng này';
     tdName.onclick = () => deleteCustomerByClick(customer.key);
     row.appendChild(tdName);
+    
+    // Contact person (Người liên hệ) - editable
+    const tdContact = document.createElement('td');
+    tdContact.innerHTML = `<input type="text" class="contact-input ${customer.contactPerson ? 'has-contact' : 'no-contact'}" value="${escapeHtml(customer.contactPerson || '')}" placeholder="Người liên hệ..." data-key="${escapeHtml(customer.key)}" onblur="updateContact(this)">`;
+    row.appendChild(tdContact);
     
     // Phone
     const tdPhone = document.createElement('td');
@@ -3159,9 +3503,9 @@ function refreshSuggestCell(customerKey, customer) {
   if (!row) return;
   
   const tds = row.querySelectorAll('td');
-  if (tds.length < 5) return;
+  if (tds.length < 6) return;
   
-  const tdSuggest = tds[4];
+  const tdSuggest = tds[5];
   const suggestions = getSuggestionsForCustomer(customer);
   
   if (suggestions === null) {
@@ -3203,6 +3547,17 @@ function updatePhone(input) {
   if (customer && customer.phone !== newPhone) {
     customer.phone = newPhone;
     updateStatsFromResult();
+  }
+}
+
+function updateContact(input) {
+  const customerKey = input.dataset.key;
+  const newContact = input.value.trim();
+  input.className = 'contact-input ' + (newContact ? 'has-contact' : 'no-contact');
+  
+  const customer = analysisResult.find(c => c.key === customerKey);
+  if (customer && customer.contactPerson !== newContact) {
+    customer.contactPerson = newContact;
   }
 }
 
@@ -3346,14 +3701,24 @@ function saveData() {
         key: c.key,
         name: c.name,
         phone: c.phone || '',
+        contactPerson: c.contactPerson || '',
         products: c.products || []
       };
     });
     
-    firebaseDb.ref('customers').set(dataObj).then(() => {
+    // Build period-2 analysis snapshot so other machines see it without re-uploading
+    const period2Snapshot = buildPeriod2Snapshot();
+    
+    const writes = [
+      firebaseDb.ref('customers').set(dataObj),
+      firebaseDb.ref(PERIOD2_FIREBASE_KEY).set(period2Snapshot)
+    ];
+    
+    Promise.all(writes).then(() => {
       hideLoading();
-      addLog('success', `☁️ Đã lưu ${analysisResult.length} KH lên Firebase`);
-      showToast(`Lưu ${analysisResult.length} khách hàng thành công`, 'success');
+      const p2count = Object.keys(period2Products).length;
+      addLog('success', `☁️ Đã lưu ${analysisResult.length} KH + Phân Tích Lần 2 (${p2count} KH có SP bỏ) lên Firebase`);
+      showToast(`Lưu ${analysisResult.length} KH + dữ liệu Phân Tích 2 thành công`, 'success');
     }).catch(e => {
       hideLoading();
       addLog('error', 'Firebase lỗi: ' + e.message);
@@ -3364,19 +3729,45 @@ function saveData() {
   }
 }
 
+// Build a serializable snapshot of period-2 analysis state
+function buildPeriod2Snapshot() {
+  return {
+    products: period2Products || {},
+    missing: period2MissingCustomers || {},
+    newCustomers: period2NewCustomers || [],
+    savedAt: new Date().toISOString(),
+    hasData: Object.keys(period2Products || {}).length > 0
+  };
+}
+
+// Apply a loaded period-2 snapshot back into the live state
+function applyPeriod2Snapshot(snap) {
+  if (!snap || typeof snap !== 'object') return false;
+  period2Products = snap.products || {};
+  period2MissingCustomers = snap.missing || {};
+  period2NewCustomers = snap.newCustomers || [];
+  return Object.keys(period2Products).length > 0 || Object.keys(period2MissingCustomers).length > 0 || period2NewCustomers.length > 0;
+}
+
 function loadData() {
   if (isFirebaseConnected && firebaseDb) {
     showLoading('Đang tải từ Firebase...');
-    firebaseDb.ref('customers').get().then(snap => {
+    Promise.all([
+      firebaseDb.ref('customers').get(),
+      firebaseDb.ref(PERIOD2_FIREBASE_KEY).get()
+    ]).then(([custSnap, p2Snap]) => {
       hideLoading();
-      if (!snap.exists()) {
+      if (!custSnap.exists()) {
         loadFromLocalStorage();
-      } else {
-        const data = Object.values(snap.val());
-        applyLoadedData(data);
-        addLog('success', `☁️ Đã tải ${data.length} KH từ Firebase`);
-        showToast(`Đã tải ${data.length} khách hàng từ Firebase`, 'success');
+        return;
       }
+      const data = Object.values(custSnap.val());
+      // Restore period-2 first so renderTable shows BỎ/MẤT tags
+      let hadP2 = false;
+      if (p2Snap.exists()) hadP2 = applyPeriod2Snapshot(p2Snap.val());
+      applyLoadedData(data);
+      addLog('success', `☁️ Đã tải ${data.length} KH từ Firebase` + (hadP2 ? ' (kèm Phân Tích Lần 2)' : ''));
+      showToast(`Đã tải ${data.length} KH${hadP2 ? ' + Phân Tích Lần 2' : ''} từ Firebase`, 'success');
     }).catch(() => {
       hideLoading();
       loadFromLocalStorage();
@@ -3394,8 +3785,14 @@ function loadFromLocalStorage() {
       return;
     }
     const data = JSON.parse(saved);
+    // Restore period-2 from localStorage backup
+    let hadP2 = false;
+    try {
+      const p2saved = localStorage.getItem(PERIOD2_LS_KEY);
+      if (p2saved) hadP2 = applyPeriod2Snapshot(JSON.parse(p2saved));
+    } catch(_) {}
     applyLoadedData(data);
-    addLog('info', `💾 Đã tải ${data.length} KH từ LocalStorage`);
+    addLog('info', `💾 Đã tải ${data.length} KH từ LocalStorage` + (hadP2 ? ' (kèm Phân Tích Lần 2)' : ''));
     showToast(`Đã tải ${data.length} khách hàng từ LocalStorage`, 'success');
   } catch(e) {
     showToast('Lỗi đọc LocalStorage', 'error');
@@ -3413,22 +3810,39 @@ function applyLoadedData(data) {
   document.getElementById('tableContainer').classList.add('show');
   document.getElementById('btnSave').style.display = 'inline-flex';
   document.getElementById('btnExport').style.display = 'inline-flex';
+  
+  // If period-2 data was restored, show the "KH không lấy SP" button + diagnostic panel
+  if (Object.keys(period2Products).length > 0) {
+    const btnMS = document.getElementById('btnMissingSearch');
+    if (btnMS) btnMS.style.display = 'inline-flex';
+  }
+  _renderNewCustomersPanel();
 }
 
 function saveToLocalStorage() {
   localStorage.setItem(LS_KEY, JSON.stringify(analysisResult));
+  // Persist period-2 snapshot to localStorage as offline backup
+  try {
+    localStorage.setItem(PERIOD2_LS_KEY, JSON.stringify(buildPeriod2Snapshot()));
+  } catch(_) {}
 }
 
 function loadCustomersFromFirebase() {
   if (!isFirebaseConnected || !firebaseDb) return;
   
-  firebaseDb.ref('customers').get().then(snap => {
-    if (snap.exists()) {
-      const data = Object.values(snap.val());
+  Promise.all([
+    firebaseDb.ref('customers').get(),
+    firebaseDb.ref(PERIOD2_FIREBASE_KEY).get()
+  ]).then(([custSnap, p2Snap]) => {
+    if (custSnap.exists()) {
+      const data = Object.values(custSnap.val());
       if (data.length > 0) {
+        // Restore period-2 analysis automatically on app open
+        let hadP2 = false;
+        if (p2Snap.exists()) hadP2 = applyPeriod2Snapshot(p2Snap.val());
         applyLoadedData(data);
-        addLog('success', `☁️ Tự động tải ${data.length} KH từ Firebase`);
-        showToast(`Đã tải ${data.length} khách hàng từ Firebase`, 'success');
+        addLog('success', `☁️ Tự động tải ${data.length} KH từ Firebase` + (hadP2 ? ' (kèm Phân Tích Lần 2)' : ''));
+        showToast(`Đã tải ${data.length} KH${hadP2 ? ' + Phân Tích Lần 2' : ''} từ Firebase`, 'success');
       }
     }
   }).catch(e => addLog('warning', 'Không thể tải KH từ Firebase: ' + e.message));
@@ -3442,7 +3856,7 @@ function exportToExcel() {
   }
   
   const excelData = [
-    ['STT', 'Tên Khách Hàng', 'Số Điện Thoại', 'Sản Phẩm Đã Mua (Kỳ Trước)', 'Số SP Kỳ Trước', 'SP KH BỎ Kỳ Này (Nhắc Bán Lại)', 'Số SP Bỏ', 'Gợi Ý Từ Danh Mục', 'Số SP Gợi Ý']
+    ['STT', 'Tên Khách Hàng', 'Người Liên Hệ', 'Số Điện Thoại', 'Sản Phẩm Đã Mua (Kỳ Trước)', 'Số SP Kỳ Trước', 'SP KH BỎ Kỳ Này (Nhắc Bán Lại)', 'Số SP Bỏ', 'Gợi Ý Từ Danh Mục', 'Số SP Gợi Ý']
   ];
   
   analysisResult.forEach((c, i) => {
@@ -3451,6 +3865,7 @@ function exportToExcel() {
     excelData.push([
       i + 1,
       c.name,
+      c.contactPerson || '',
       c.phone || '',
       (c.products || []).join(', '),
       (c.products || []).length,
@@ -3462,7 +3877,7 @@ function exportToExcel() {
   });
   
   const ws = XLSX.utils.aoa_to_sheet(excelData);
-  ws['!cols'] = [{wch:5}, {wch:55}, {wch:16}, {wch:120}, {wch:10}, {wch:80}, {wch:10}, {wch:120}, {wch:10}];
+  ws['!cols'] = [{wch:5}, {wch:55}, {wch:35}, {wch:16}, {wch:120}, {wch:10}, {wch:80}, {wch:10}, {wch:120}, {wch:10}];
   
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'KhachHang');
@@ -3527,11 +3942,13 @@ function performDeleteAll() {
   if (isFirebaseConnected && firebaseDb) {
     promises.push(firebaseDb.ref('customers').remove().catch(e => addLog('error', 'Lỗi xóa customers: ' + e.message)));
     promises.push(firebaseDb.ref(CATALOG_FIREBASE_KEY).remove().catch(e => addLog('error', 'Lỗi xóa catalog: ' + e.message)));
+    promises.push(firebaseDb.ref(PERIOD2_FIREBASE_KEY).remove().catch(e => addLog('error', 'Lỗi xóa Phân Tích 2: ' + e.message)));
   }
   
   Promise.all(promises).then(() => {
     localStorage.removeItem(LS_KEY);
     localStorage.removeItem(CATALOG_KEY);
+    localStorage.removeItem(PERIOD2_LS_KEY);
     
     analysisResult = [];
     catalogProducts = [];
@@ -3562,6 +3979,7 @@ function performDeleteAll() {
     document.getElementById('btnUpdateData').style.display = 'none';
     document.getElementById('btnSave').style.display = 'none';
     document.getElementById('btnExport').style.display = 'none';
+    document.getElementById('btnMissingSearch').style.display = 'none';
     document.getElementById('catalogClearWrap').classList.remove('show');
     document.getElementById('statsGrid').classList.remove('show');
     document.getElementById('searchBox').classList.remove('show');
@@ -3653,6 +4071,7 @@ function clearCompareFile() {
   document.getElementById('fileCompare').value = '';
   document.getElementById('btnAnalyze2').style.display = 'none';
   document.getElementById('btnAnalyze2').disabled = true;
+  document.getElementById('btnMissingSearch').style.display = 'none';
   // Hide preview panel
   const preview = document.getElementById('file3Preview');
   if (preview) preview.classList.remove('show');
@@ -4203,12 +4622,24 @@ function runAnalysis2() {
       // Enable Analyze 2 button after first run
       document.getElementById('btnAnalyze2').disabled = false;
       
+      // Show the "Khách Không Lấy SP" button now that period2 data is available
+      const totalDropped = Object.keys(period2Products).length;
+      const btnMS = document.getElementById('btnMissingSearch');
+      if (btnMS) btnMS.style.display = totalDropped > 0 ? 'inline-flex' : 'none';
+      
+      // Make sure Save button is visible so user can persist period-2 to Firebase
+      document.getElementById('btnSave').style.display = 'inline-flex';
+      
+      // Persist period-2 snapshot to localStorage immediately (offline backup)
+      try { localStorage.setItem(PERIOD2_LS_KEY, JSON.stringify(buildPeriod2Snapshot())); } catch(_) {}
+      
       renderTable(analysisResult);
       hideLoading();
       
       const msg = `✅ Phân tích kỳ 2 xong: ${matchCount} KH khớp · ${missingCustCount} KH không hợp tác kỳ này · ${newProdCount} SP bị bỏ · ${unmatchedCount} KH mới chưa khớp`;
       
       showToast(msg, 'success');
+      setTimeout(() => showToast('💾 Bấm "Lưu (Firebase + Local)" để các máy khác thấy kết quả Phân Tích 2 mà không cần upload lại', 'warning'), 1200);
       addLog('success', `✅ Phân tích kỳ 2: ${totalRows3} dòng file 3 | ${file3Map.size} KH trong file 3`);
       addLog('info', `   → ${matchCount} KH khớp với kỳ 1 | ${newProdCount} SP bị bỏ → nhắc bán lại`);
       addLog('info', `   → ${missingCustCount} KH kỳ trước KHÔNG xuất hiện kỳ này (nên xem lại quan hệ)`);
@@ -4267,11 +4698,258 @@ initFirebase();
 // After Analysis 1 completes, if FILE 03 is loaded, enable Analyze 2 btn
 const _origRunAnalysis = runAnalysis;
 
+// ==================== MISSING PRODUCT SEARCH FEATURE ====================
+
+let _missingSelectedProduct = '';    // currently selected product name
+let _missingAcIndex = -1;            // keyboard nav index in autocomplete
+let _missingResults = [];            // computed list of matching customers
+
+// Open the modal
+function openMissingModal() {
+  const hasP2 = Object.keys(period2Products).length > 0;
+  document.getElementById('missingNoAnalysis').classList.toggle('show', !hasP2);
+  document.getElementById('missingSearchSection').style.display = hasP2 ? '' : 'none';
+  document.getElementById('missingModalOverlay').classList.add('show');
+  _missingSelectedProduct = '';
+  _missingResults = [];
+  _missingAcIndex = -1;
+  document.getElementById('missingSearchInput').value = '';
+  document.getElementById('missingAutocomplete').classList.remove('show');
+  document.getElementById('missingResultInfo').classList.remove('show');
+  document.getElementById('missingResultPreview').classList.remove('show');
+  document.getElementById('btnMissingExport').disabled = true;
+  if (hasP2) setTimeout(() => document.getElementById('missingSearchInput').focus(), 80);
+}
+
+function closeMissingModal() {
+  document.getElementById('missingModalOverlay').classList.remove('show');
+  document.getElementById('missingAutocomplete').classList.remove('show');
+}
+
+// Autocomplete input handler
+function onMissingSearchInput(val) {
+  _missingSelectedProduct = '';
+  document.getElementById('btnMissingExport').disabled = true;
+  document.getElementById('missingResultInfo').classList.remove('show');
+  document.getElementById('missingResultPreview').classList.remove('show');
+  _missingAcIndex = -1;
+  
+  const q = toLower(normalize(val));
+  if (!q || q.length < 1) {
+    document.getElementById('missingAutocomplete').classList.remove('show');
+    return;
+  }
+  
+  // Build candidate list: catalogProducts + all products in period2Products
+  const productPool = new Set(catalogProducts);
+  Object.values(period2Products).forEach(arr => arr.forEach(p => productPool.add(p)));
+  
+  const matches = [...productPool].filter(p => toLower(p).includes(q)).sort((a, b) => {
+    // prioritize starts-with
+    const as = toLower(a).startsWith(q) ? 0 : 1;
+    const bs = toLower(b).startsWith(q) ? 0 : 1;
+    return as - bs || a.localeCompare(b, 'vi');
+  }).slice(0, 30);
+  
+  const acDiv = document.getElementById('missingAutocomplete');
+  
+  if (!matches.length) {
+    acDiv.innerHTML = `<div class="missing-ac-empty">Không tìm thấy sản phẩm khớp với "${escapeHtml(val)}"</div>`;
+    acDiv.classList.add('show');
+    return;
+  }
+  
+  // Highlight matched substring
+  function highlight(text, q) {
+    const idx = toLower(text).indexOf(q);
+    if (idx < 0) return escapeHtml(text);
+    return escapeHtml(text.slice(0, idx)) +
+      `<span class="missing-ac-highlight">${escapeHtml(text.slice(idx, idx + q.length))}</span>` +
+      escapeHtml(text.slice(idx + q.length));
+  }
+  
+  acDiv.innerHTML = matches.map((p, i) =>
+    `<div class="missing-ac-item" data-product="${escapeHtml(p)}" data-idx="${i}"
+       onclick="selectMissingProduct('${escapeHtml(p.replace(/'/g,"&#39;"))}')">
+       ${highlight(p, q)}
+     </div>`
+  ).join('');
+  acDiv.classList.add('show');
+}
+
+// Keyboard navigation
+function onMissingSearchKeydown(e) {
+  const acDiv = document.getElementById('missingAutocomplete');
+  const items = acDiv.querySelectorAll('.missing-ac-item');
+  if (!items.length) return;
+  
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    _missingAcIndex = Math.min(_missingAcIndex + 1, items.length - 1);
+    items.forEach((el, i) => el.classList.toggle('selected', i === _missingAcIndex));
+    items[_missingAcIndex]?.scrollIntoView({ block: 'nearest' });
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    _missingAcIndex = Math.max(_missingAcIndex - 1, 0);
+    items.forEach((el, i) => el.classList.toggle('selected', i === _missingAcIndex));
+    items[_missingAcIndex]?.scrollIntoView({ block: 'nearest' });
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    const selected = acDiv.querySelector('.missing-ac-item.selected') || items[0];
+    if (selected) selectMissingProduct(selected.dataset.product);
+  } else if (e.key === 'Escape') {
+    acDiv.classList.remove('show');
+  }
+}
+
+// User picks a product from autocomplete or presses Enter
+function selectMissingProduct(productName) {
+  _missingSelectedProduct = productName;
+  document.getElementById('missingSearchInput').value = productName;
+  document.getElementById('missingAutocomplete').classList.remove('show');
+  _missingAcIndex = -1;
+  computeMissingResults(productName);
+}
+
+// Core logic: find customers who had the product in period1 but dropped it in period2
+function computeMissingResults(productName) {
+  if (!productName) return;
+  
+  const prodKey = productKey(productName);
+  
+  // Strategy: look through period2Products — those are products each customer had in P1 but NOT in P2
+  // So if period2Products[customerKey] contains this product → customer dropped it this period
+  // Additionally, include customers who appear in analysisResult with the product
+  // but have no record in compareData (period2MissingCustomers) — they didn't appear at all
+  
+  _missingResults = [];
+  
+  for (const customer of analysisResult) {
+    const droppedProds = period2Products[customer.key] || [];
+    const hadAndDropped = droppedProds.some(p => productKey(p) === prodKey);
+    
+    if (hadAndDropped) {
+      // Get contact person: stored in customer.contactPerson if available, else from export data
+      const contactPerson = customer.contactPerson || '';
+      _missingResults.push({
+        contactPerson,
+        phone: customer.phone || '',
+        name: customer.name
+      });
+    }
+  }
+  
+  // Sort by name
+  _missingResults.sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+  
+  // Show result info
+  const infoDiv = document.getElementById('missingResultInfo');
+  const countSpan = document.getElementById('missingResultCount');
+  const textSpan = document.getElementById('missingResultText');
+  const previewDiv = document.getElementById('missingResultPreview');
+  
+  countSpan.textContent = _missingResults.length;
+  
+  if (_missingResults.length === 0) {
+    textSpan.innerHTML = `khách hàng → Không có KH nào từng mua <strong>${escapeHtml(productName)}</strong> mà bỏ kỳ này`;
+    infoDiv.classList.add('show');
+    previewDiv.classList.remove('show');
+    document.getElementById('btnMissingExport').disabled = true;
+    return;
+  }
+  
+  textSpan.innerHTML = `khách hàng từng mua <strong>${escapeHtml(productName)}</strong> nhưng <strong>kỳ này không lấy</strong>`;
+  infoDiv.classList.add('show');
+  
+  // Render preview (max 8 rows)
+  const preview = _missingResults.slice(0, 8);
+  previewDiv.innerHTML = preview.map(r =>
+    `<div class="missing-preview-row">
+      <span class="missing-preview-name">${escapeHtml(r.name)}</span>
+      <span class="missing-preview-phone">${escapeHtml(r.phone) || '<span style="color:#cbd5e1">—</span>'}</span>
+      <span class="missing-preview-contact">${escapeHtml(r.contactPerson) || ''}</span>
+    </div>`
+  ).join('') + (_missingResults.length > 8 ?
+    `<div style="text-align:center;font-size:11px;color:var(--text-muted);padding:6px;">...và ${_missingResults.length - 8} KH khác (xem đầy đủ khi xuất Excel)</div>` : '');
+  previewDiv.classList.add('show');
+  document.getElementById('btnMissingExport').disabled = false;
+}
+
+// Export to Excel
+function exportMissingCustomers() {
+  if (!_missingResults.length || !_missingSelectedProduct) {
+    showToast('Chưa có dữ liệu để xuất', 'warning');
+    return;
+  }
+  
+  const productLabel = _missingSelectedProduct;
+  const today = new Date().toLocaleDateString('vi-VN');
+  
+  // Build header + data
+  const excelData = [
+    [`DANH SÁCH KHÁCH HÀNG KHÔNG LẤY SẢN PHẨM KỲ NÀY`],
+    [`Sản phẩm: ${productLabel}`],
+    [`Ngày xuất: ${today}  |  Tổng: ${_missingResults.length} khách hàng`],
+    [],
+    ['STT', 'Tên Khách Hàng', 'Người Liên Hệ', 'Số Điện Thoại']
+  ];
+  
+  _missingResults.forEach((r, i) => {
+    excelData.push([
+      i + 1,
+      r.name,
+      r.contactPerson || '',
+      r.phone || ''
+    ]);
+  });
+  
+  const ws = XLSX.utils.aoa_to_sheet(excelData);
+  
+  // Merge title rows
+  ws['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: 3 } },
+    { s: { r: 2, c: 0 }, e: { r: 2, c: 3 } }
+  ];
+  
+  // Column widths
+  ws['!cols'] = [{ wch: 5 }, { wch: 65 }, { wch: 40 }, { wch: 18 }];
+  
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'KH_Khong_Lay_SP');
+  
+  const safeProductName = productLabel.replace(/[^a-zA-Z0-9À-ỹ\s]/g, '').replace(/\s+/g, '_').substring(0, 40);
+  const filename = `KH_khong_lay_${safeProductName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+  
+  XLSX.writeFile(wb, filename);
+  showToast(`✅ Xuất ${_missingResults.length} khách hàng không lấy "${productLabel}"`, 'success');
+  addLog('success', `📥 Xuất Excel: ${_missingResults.length} KH không lấy "${productLabel}" → ${filename}`);
+}
+
+// Close autocomplete when clicking outside
+document.addEventListener('click', (e) => {
+  const ac = document.getElementById('missingAutocomplete');
+  if (ac && !e.target.closest('.missing-search-wrap')) {
+    ac.classList.remove('show');
+  }
+});
+
+// Make functions global
+window.openMissingModal = openMissingModal;
+window.closeMissingModal = closeMissingModal;
+window.onMissingSearchInput = onMissingSearchInput;
+window.onMissingSearchKeydown = onMissingSearchKeydown;
+window.selectMissingProduct = selectMissingProduct;
+window.exportMissingCustomers = exportMissingCustomers;
+
+// ==================== END MISSING PRODUCT SEARCH ====================
+
 // Make functions global for inline event handlers
 window.toggleSuggestDropdown = toggleSuggestDropdown;
 window.closeSuggestDropdown = closeSuggestDropdown;
 window.addSuggestedProduct = addSuggestedProduct;
 window.updatePhone = updatePhone;
+window.updateContact = updateContact;
 window.addProductToCustomer = addProductToCustomer;
 window.deleteCustomer = deleteCustomer;
 window.deleteCustomerByClick = deleteCustomerByClick;
@@ -4312,6 +4990,7 @@ document.getElementById('btnAnalyze2').addEventListener('click', runAnalysis2);
 document.getElementById('btnSave').addEventListener('click', saveData);
 document.getElementById('btnLoad').addEventListener('click', loadData);
 document.getElementById('btnExport').addEventListener('click', exportToExcel);
+document.getElementById('btnMissingSearch').addEventListener('click', openMissingModal);
 document.getElementById('btnDeleteAll').addEventListener('click', showDeleteConfirm);
 document.getElementById('saveCatalogBtn').addEventListener('click', saveCatalogToFirebase);
 document.getElementById('searchInput').addEventListener('input', filterTable);
