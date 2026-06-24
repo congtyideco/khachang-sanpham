@@ -3749,6 +3749,42 @@ function applyPeriod2Snapshot(snap) {
   return Object.keys(period2Products).length > 0 || Object.keys(period2MissingCustomers).length > 0 || period2NewCustomers.length > 0;
 }
 
+// ==================== TỰ ĐỘNG LƯU BỀN VỮNG LÊN FIREBASE ====================
+// Ghi customers + period2_analysis lên Firebase mà KHÔNG cần bấm nút Lưu.
+// Nhờ vậy popup luôn đọc được dữ liệu, kể cả khi khởi động lại app
+// (dữ liệu chỉ mất khi người dùng chủ động Xóa).
+function autoPersistToFirebase(reason) {
+  // Luôn backup localStorage trước
+  try {
+    saveToLocalStorage && saveToLocalStorage();
+    localStorage.setItem(PERIOD2_LS_KEY, JSON.stringify(buildPeriod2Snapshot()));
+  } catch(_) {}
+
+  if (!isFirebaseConnected || !firebaseDb) return;
+  if (!analysisResult || !analysisResult.length) return;
+
+  const dataObj = {};
+  analysisResult.forEach(c => {
+    dataObj[c.key] = {
+      key: c.key,
+      name: c.name,
+      phone: c.phone || '',
+      contactPerson: c.contactPerson || '',
+      products: c.products || []
+    };
+  });
+  const period2Snapshot = buildPeriod2Snapshot();
+
+  Promise.all([
+    firebaseDb.ref('customers').set(dataObj),
+    firebaseDb.ref(PERIOD2_FIREBASE_KEY).set(period2Snapshot)
+  ]).then(() => {
+    addLog('success', `☁️ Tự động lưu bền vững lên Firebase (${analysisResult.length} KH${period2Snapshot.hasData ? ' + Phân Tích 2' : ''})` + (reason ? ` — ${reason}` : ''));
+  }).catch(e => {
+    addLog('warning', '⚠️ Tự động lưu Firebase chưa thành công: ' + e.message + ' (đã backup LocalStorage)');
+  });
+}
+
 function loadData() {
   if (isFirebaseConnected && firebaseDb) {
     showLoading('Đang tải từ Firebase...');
@@ -3768,6 +3804,8 @@ function loadData() {
       applyLoadedData(data);
       addLog('success', `☁️ Đã tải ${data.length} KH từ Firebase` + (hadP2 ? ' (kèm Phân Tích Lần 2)' : ''));
       showToast(`Đã tải ${data.length} KH${hadP2 ? ' + Phân Tích Lần 2' : ''} từ Firebase`, 'success');
+      // Củng cố: ghi lại lên Firebase để node luôn tồn tại bền vững cho popup
+      autoPersistToFirebase('sau khi Tải dữ liệu');
     }).catch(() => {
       hideLoading();
       loadFromLocalStorage();
@@ -3804,19 +3842,22 @@ function applyLoadedData(data) {
   const allProducts = new Set(analysisResult.flatMap(c => c.products || []));
   updateStats(analysisResult.length, allProducts.size, analysisResult.filter(c => c.phone).length, '—');
   renderTable(analysisResult);
-  
-  document.getElementById('statsGrid').classList.add('show');
-  document.getElementById('searchBox').classList.add('show');
-  document.getElementById('tableContainer').classList.add('show');
-  document.getElementById('btnSave').style.display = 'inline-flex';
-  document.getElementById('btnExport').style.display = 'inline-flex';
-  
+
+  // An toàn với null: nếu DOM chưa dựng xong (tự tải lúc khởi động) thì bỏ qua, không văng lỗi
+  const _show = id => { const el = document.getElementById(id); if (el) el.classList.add('show'); };
+  const _disp = id => { const el = document.getElementById(id); if (el) el.style.display = 'inline-flex'; };
+  _show('statsGrid');
+  _show('searchBox');
+  _show('tableContainer');
+  _disp('btnSave');
+  _disp('btnExport');
+
   // If period-2 data was restored, show the "KH không lấy SP" button + diagnostic panel
   if (Object.keys(period2Products).length > 0) {
     const btnMS = document.getElementById('btnMissingSearch');
     if (btnMS) btnMS.style.display = 'inline-flex';
   }
-  _renderNewCustomersPanel();
+  try { _renderNewCustomersPanel(); } catch(_) {}
 }
 
 function saveToLocalStorage() {
@@ -3843,8 +3884,32 @@ function loadCustomersFromFirebase() {
         applyLoadedData(data);
         addLog('success', `☁️ Tự động tải ${data.length} KH từ Firebase` + (hadP2 ? ' (kèm Phân Tích Lần 2)' : ''));
         showToast(`Đã tải ${data.length} KH${hadP2 ? ' + Phân Tích Lần 2' : ''} từ Firebase`, 'success');
+        // Nếu Firebase có customers nhưng THIẾU period2 -> đẩy bù từ localStorage (nếu có)
+        if (!p2Snap.exists()) {
+          try {
+            const p2saved = localStorage.getItem(PERIOD2_LS_KEY);
+            if (p2saved && applyPeriod2Snapshot(JSON.parse(p2saved))) {
+              autoPersistToFirebase('bù Phân Tích 2 từ LocalStorage');
+              renderTable(analysisResult);
+            }
+          } catch(_) {}
+        }
+        return;
       }
     }
+    // Firebase chưa có dữ liệu -> khôi phục từ LocalStorage rồi tự đẩy lên cloud
+    try {
+      const saved = localStorage.getItem(LS_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        let hadP2 = false;
+        const p2saved = localStorage.getItem(PERIOD2_LS_KEY);
+        if (p2saved) hadP2 = applyPeriod2Snapshot(JSON.parse(p2saved));
+        applyLoadedData(data);
+        addLog('info', `💾 Firebase trống → khôi phục ${data.length} KH từ LocalStorage` + (hadP2 ? ' (kèm Phân Tích 2)' : ''));
+        autoPersistToFirebase('đồng bộ LocalStorage lên Firebase');
+      }
+    } catch(_) {}
   }).catch(e => addLog('warning', 'Không thể tải KH từ Firebase: ' + e.message));
 }
 
@@ -4632,7 +4697,10 @@ function runAnalysis2() {
       
       // Persist period-2 snapshot to localStorage immediately (offline backup)
       try { localStorage.setItem(PERIOD2_LS_KEY, JSON.stringify(buildPeriod2Snapshot())); } catch(_) {}
-      
+
+      // TỰ ĐỘNG lưu bền vững lên Firebase ngay sau khi phân tích — popup sẽ thấy ngay
+      autoPersistToFirebase('sau Phân Tích 2');
+
       renderTable(analysisResult);
       hideLoading();
       
@@ -4692,8 +4760,29 @@ function addProductToCustomer(input) {
   input.value = '';
 }
 
-// Initialize
-initFirebase();
+// Initialize — chờ DOM sẵn sàng để tự động tải dữ liệu lúc khởi động không bị lỗi
+function _bootstrapApp() {
+  // 1) Hiển thị ngay dữ liệu từ LocalStorage (nếu có) để không bị trống lúc chờ Firebase
+  try {
+    const saved = localStorage.getItem(LS_KEY);
+    if (saved) {
+      const data = JSON.parse(saved);
+      const p2saved = localStorage.getItem(PERIOD2_LS_KEY);
+      if (p2saved) applyPeriod2Snapshot(JSON.parse(p2saved));
+      if (Array.isArray(data) && data.length) {
+        applyLoadedData(data);
+        addLog('info', `💾 Khởi động: hiển thị ${data.length} KH từ LocalStorage (đang đồng bộ Firebase...)`);
+      }
+    }
+  } catch(_) {}
+  // 2) Kết nối Firebase, sẽ tự tải đè bản mới nhất từ cloud
+  initFirebase();
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _bootstrapApp);
+} else {
+  _bootstrapApp();
+}
 
 // After Analysis 1 completes, if FILE 03 is loaded, enable Analyze 2 btn
 const _origRunAnalysis = runAnalysis;
