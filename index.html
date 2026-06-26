@@ -2538,6 +2538,7 @@ const CATALOG_KEY = 'sp_catalog_v1';
 const CATALOG_FIREBASE_KEY = 'catalog_products';
 const PERIOD2_FIREBASE_KEY = 'period2_analysis';   // lưu kết quả Phân Tích Lần 2 lên Firebase
 const PERIOD2_LS_KEY = 'kh_period2_v1';            // backup localStorage
+const RAW_UPLOAD_KEY = 'kh_raw_upload_v1';        // lưu 2 file thô (xuất kho + DSKH) để tự phân tích lại
 const DELETE_PASSWORD = 'minhtriet@2026';
 
 // ==================== GLOBAL VARIABLES ====================
@@ -4014,6 +4015,9 @@ function performDeleteAll() {
     localStorage.removeItem(LS_KEY);
     localStorage.removeItem(CATALOG_KEY);
     localStorage.removeItem(PERIOD2_LS_KEY);
+    localStorage.removeItem(RAW_UPLOAD_KEY);
+    _exportFileName = '';
+    _customerFileName = '';
     
     analysisResult = [];
     catalogProducts = [];
@@ -4092,13 +4096,60 @@ function showToast(message, type = 'success') {
 // File upload setups (FILE 01 & 02)
 setupFileUpload('dropzoneExport', 'fileExport', 'fileExportOk', 'exportFileName', 'cardExport', (rows, name) => {
   exportData = rows;
+  _exportFileName = name;
   addLog('info', `📂 File xuất kho: ${name} - ${rows.length - 1} bản ghi`);
+  _persistRawUploads();
+  _maybeAutoAnalyze();
 });
 
 setupFileUpload('dropzoneCustomer', 'fileCustomer', 'fileCustomerOk', 'customerFileName', 'cardCustomer', (rows, name) => {
   customerData = rows;
+  _customerFileName = name;
   addLog('info', `📂 File danh sách KH: ${name} - ${rows.length - 1} bản ghi`);
+  _persistRawUploads();
+  _maybeAutoAnalyze();
 });
+
+// === Lưu 2 file thô vào LocalStorage để khi mở lại app tự phân tích, đến khi xóa upload mới ===
+let _exportFileName = '';
+let _customerFileName = '';
+function _persistRawUploads() {
+  try {
+    const payload = {
+      exportData: exportData || null,
+      customerData: customerData || null,
+      exportName: _exportFileName || (document.getElementById('exportFileName')?.textContent || ''),
+      customerName: _customerFileName || (document.getElementById('customerFileName')?.textContent || '')
+    };
+    if (payload.exportData || payload.customerData) {
+      localStorage.setItem(RAW_UPLOAD_KEY, JSON.stringify(payload));
+    }
+  } catch(e) {
+    addLog('warning', '⚠️ Không lưu được file thô (có thể quá lớn): ' + e.message);
+  }
+}
+
+// === Tự động chạy Phân Tích Lần 1 khi đã đủ 2 file, không cần bấm nút ===
+let _autoAnalyzeBusy = false;
+function _maybeAutoAnalyze() {
+  if (_autoAnalyzeBusy) return;
+  if (exportData && customerData) {
+    _autoAnalyzeBusy = true;
+    addLog('info', '⚡ Tự động phân tích sau khi nạp đủ 2 file...');
+    runAnalysis();
+    setTimeout(() => {
+      if (compareData && analysisResult.length > 0) {
+        document.getElementById('btnAnalyze2').style.display = 'inline-flex';
+        document.getElementById('btnAnalyze2').disabled = false;
+      }
+      if (updateData && analysisResult.length > 0) {
+        document.getElementById('btnUpdateData').style.display = 'inline-flex';
+        document.getElementById('btnUpdateData').disabled = false;
+      }
+      _autoAnalyzeBusy = false;
+    }, 2000);
+  }
+}
 
 // Catalog file upload
 const catalogDropzone = document.getElementById('catalogDropzone');
@@ -4775,6 +4826,45 @@ function _bootstrapApp() {
       }
     }
   } catch(_) {}
+  // 1b) Nếu chưa có kết quả phân tích sẵn nhưng có 2 file thô đã lưu -> tự khôi phục & phân tích lại
+  try {
+    const hasResult = !!localStorage.getItem(LS_KEY);
+    const rawSaved = localStorage.getItem(RAW_UPLOAD_KEY);
+    if (rawSaved) {
+      const raw = JSON.parse(rawSaved);
+      if (raw && (raw.exportData || raw.customerData)) {
+        if (raw.exportData) {
+          exportData = raw.exportData;
+          _exportFileName = raw.exportName || '';
+          const okE = document.getElementById('fileExportOk');
+          const nmE = document.getElementById('exportFileName');
+          const cE = document.getElementById('cardExport');
+          if (okE) okE.classList.add('show');
+          if (nmE) nmE.textContent = `${raw.exportName || 'File xuất kho'} · ${exportData.length - 1} dòng`;
+          if (cE) cE.classList.add('loaded');
+        }
+        if (raw.customerData) {
+          customerData = raw.customerData;
+          _customerFileName = raw.customerName || '';
+          const okC = document.getElementById('fileCustomerOk');
+          const nmC = document.getElementById('customerFileName');
+          const cC = document.getElementById('cardCustomer');
+          if (okC) okC.classList.add('show');
+          if (nmC) nmC.textContent = `${raw.customerName || 'File danh sách KH'} · ${customerData.length - 1} dòng`;
+          if (cC) cC.classList.add('loaded');
+        }
+        const btnA = document.getElementById('btnAnalyze');
+        if (btnA) btnA.disabled = !(exportData && customerData);
+        // Nếu đủ 2 file và chưa có kết quả -> tự phân tích ngay
+        if (exportData && customerData && !hasResult) {
+          addLog('info', '🔄 Khôi phục 2 file đã upload và tự phân tích lại...');
+          setTimeout(_maybeAutoAnalyze, 300);
+        }
+      }
+    }
+  } catch(e) {
+    addLog('warning', '⚠️ Không khôi phục được file thô: ' + e.message);
+  }
   // 2) Kết nối Firebase, sẽ tự tải đè bản mới nhất từ cloud
   initFirebase();
 }
