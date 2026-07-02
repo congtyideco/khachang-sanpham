@@ -2590,6 +2590,23 @@ function generateKey(name) {
   return toLower(name).replace(/[.#$\[\]\/\\]/g, '_').replace(/\s+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').substring(0, 100) || 'key_' + Date.now();
 }
 
+// Find the "customer NAME" column in a header row, being careful not to accidentally
+// pick a customer CODE/ID column (e.g. "Mã khách hàng") just because it also contains "khách".
+// Many xuất-kho files have BOTH "Mã khách hàng" and "Tên khách hàng" — the code column
+// often comes first, so a naive .includes('khách') search would wrongly grab the code column
+// and break all downstream name-matching against the customer list.
+function findCustomerNameCol(headerRow) {
+  const lower = headerRow.map(c => toLower(c));
+  // 1) Best: header explicitly says "tên khách hàng" / "tên khách"
+  let idx = lower.findIndex(c => c.includes('tên khách'));
+  if (idx >= 0) return idx;
+  // 2) Header contains "khách" but is NOT a code/ID column
+  idx = lower.findIndex(c => c.includes('khách') && !c.includes('mã') && !c.includes('id') && !c.includes('code'));
+  if (idx >= 0) return idx;
+  // 3) Last resort: first header containing "khách" at all (old behavior)
+  return lower.findIndex(c => c.includes('khách'));
+}
+
 // ==================== PRODUCT NAME EXTRACTION (IMPROVED) ====================
 function extractProductName(fullText) {
   const text = normalize(fullText);
@@ -3131,7 +3148,7 @@ function runAnalysis() {
       buildCatalogFromExportData(exportData, headerIndex);
       
       const headerRow = exportData[headerIndex].map(c => normalize(String(c)));
-      let customerCol = headerRow.findIndex(c => toLower(c).includes('khách'));
+      let customerCol = findCustomerNameCol(headerRow);
       let productCol = headerRow.findIndex(c => toLower(c).includes('sản phẩm') || toLower(c).includes('product'));
       // Detect contact person column: "Người nhận" / "Người liên hệ" / "NV" / "nhân viên"
       let contactCol = headerRow.findIndex(c => toLower(c).includes('người nhận') || toLower(c).includes('người liên hệ') || toLower(c).includes('liên hệ'));
@@ -3141,6 +3158,8 @@ function runAnalysis() {
       
       if (customerCol < 0) customerCol = 3;
       if (productCol < 0) productCol = 5;
+      
+      addLog('info', `📁 File xuất kho: cột Khách hàng=${customerCol+1} ("${headerRow[customerCol]||'?'}") · cột Sản phẩm=${productCol+1} ("${headerRow[productCol]||'?'}")${contactCol >= 0 ? ` · cột Người nhận=${contactCol+1} ("${headerRow[contactCol]}")` : ''}`);
       
       // Group products by customer
       const customerMap = new Map();
@@ -3178,7 +3197,7 @@ function runAnalysis() {
       }
       
       const custHeaderRow = customerData[custHeaderIndex].map(c => normalize(String(c)));
-      let custNameCol = custHeaderRow.findIndex(c => toLower(c).includes('khách'));
+      let custNameCol = findCustomerNameCol(custHeaderRow);
       let phoneCol = custHeaderRow.findIndex(c => toLower(c).includes('điện') || toLower(c).includes('phone') || toLower(c).includes('sđt') || toLower(c).includes('sdt'));
       // Detect "Người liên hệ" column in the customer list file
       let custContactCol = custHeaderRow.findIndex(c => {
@@ -3208,7 +3227,10 @@ function runAnalysis() {
       
       addLog('info', `📇 File DS khách hàng: cột Tên KH=${custNameCol+1} ("${custHeaderRow[custNameCol]||'?'}") · cột Người liên hệ=${custContactCol+1} ("${custHeaderRow[custContactCol]||'(cột D mặc định)'}") · cột SĐT=${phoneCol+1} ("${custHeaderRow[phoneCol]||'?'}")`);
       
-      // Build a lookup keyed by normalized customer name → { phone, contactPerson }
+      // Build a lookup keyed by normalized (company-word-stripped) customer name → { phone, contactPerson }
+      // Uses normalizeCompanyName() (strips "Công ty", "TNHH", "Cổ phần", "Chi nhánh", "Nhà thuốc", ...)
+      // so that names written differently in the 2 files (e.g. "Cty TNHH ABC" vs "ABC")
+      // still match correctly. This is the same robust matching used by the "Cập nhật dữ liệu" flow.
       const phoneList = [];
       for (let i = custHeaderIndex + 1; i < customerData.length; i++) {
         const row = customerData[i];
@@ -3220,7 +3242,9 @@ function runAnalysis() {
         const hasPhone = phone && !['nan', 'NaN', '', 'null', 'undefined'].includes(phone);
         // keep the row even if no phone, as long as it carries a contact person
         if (hasPhone || contact) {
-          phoneList.push({ key: toLower(name), phone: hasPhone ? phone : '', contact });
+          const normKey = normalizeCompanyName(name);
+          if (!normKey) continue;
+          phoneList.push({ key: toLower(name), normKey, phone: hasPhone ? phone : '', contact });
         }
       }
       
@@ -3232,24 +3256,42 @@ function runAnalysis() {
         let phone = '';
         let contactFromList = '';
         
+        // 1) Exact match on raw lower-cased name (fast path)
         const exactMatch = phoneList.find(p => p.key === key);
         if (exactMatch) {
           phone = exactMatch.phone;
           contactFromList = exactMatch.contact;
         } else {
+          const norm = normalizeCompanyName(data.display);
           let bestScore = 0, bestPhone = '', bestContact = '';
-          for (const p of phoneList) {
-            const score = jaroWinkler(key, p.key);
-            if (score > bestScore) {
-              bestScore = score;
-              bestPhone = p.phone;
-              bestContact = p.contact;
+          if (norm && norm.length >= 2) {
+            for (const p of phoneList) {
+              let score;
+              // 2) Exact match after stripping company words (Công ty/TNHH/Cổ phần/...)
+              if (norm === p.normKey) {
+                score = 100;
+              } else if (norm.length >= 3 && p.normKey.length >= 3 && (p.normKey.startsWith(norm) || norm.startsWith(p.normKey))) {
+                // 3) One name is a prefix of the other after stripping
+                score = 95;
+              } else if (norm.length >= 3 && p.normKey.length >= 3 && (p.normKey.includes(norm) || norm.includes(p.normKey))) {
+                // 4) Contains match, weighted by length ratio
+                const ratio = Math.min(norm.length, p.normKey.length) / Math.max(norm.length, p.normKey.length);
+                score = ratio > 0.35 ? Math.round(85 * ratio) : 0;
+              } else {
+                // 5) Fallback: fuzzy Jaro-Winkler on stripped names
+                score = jaroWinkler(norm, p.normKey);
+              }
+              if (score > bestScore) {
+                bestScore = score;
+                bestPhone = p.phone;
+                bestContact = p.contact;
+              }
             }
           }
           if (bestScore >= threshold) { phone = bestPhone; contactFromList = bestContact; }
         }
         
-        if (phone) matchedPhones++;
+        if (phone || contactFromList) matchedPhones++;
         
         // Priority for contact person: from customer list file > from export file ("Người nhận")
         const contactPerson = contactFromList || data.contactPerson || '';
@@ -4025,7 +4067,7 @@ function performDeleteAll() {
     customerData = null;
     compareData = null;
     updateData = null;
-    _updateFileMeta = { name: '', custCol: -1, prodCol: -1, phoneCol: -1, headerIdx: 0, rowCount: 0 };
+    _updateFileMeta = { name: '', custCol: -1, prodCol: -1, phoneCol: -1, contactCol: -1, headerIdx: 0, rowCount: 0 };
     period2Products = {};
     period2MissingCustomers = {};
     period2NewCustomers = [];
@@ -4239,7 +4281,7 @@ function processCompareFile(file) {
         }
       }
       const hdrRow = (rows[headerIdx] || []).map(c => normalize(String(c)));
-      let custC = hdrRow.findIndex(c => toLower(c).includes('khách'));
+      let custC = findCustomerNameCol(hdrRow);
       // Prefer "Sản phẩm" without "mã"
       let prodC = hdrRow.findIndex(c => toLower(c).includes('sản phẩm') && !toLower(c).includes('mã'));
       if (prodC < 0) prodC = hdrRow.findIndex(c => toLower(c).includes('sản phẩm') || toLower(c).includes('product'));
@@ -4298,11 +4340,11 @@ function processCompareFile(file) {
 
 // ==================== FILE 04 UPLOAD: CẬP NHẬT ====================
 let updateData = null; // raw parsed rows from update file
-let _updateFileMeta = { name: '', custCol: -1, prodCol: -1, phoneCol: -1, headerIdx: 0, rowCount: 0 };
+let _updateFileMeta = { name: '', custCol: -1, prodCol: -1, phoneCol: -1, contactCol: -1, headerIdx: 0, rowCount: 0 };
 
 function clearUpdateFile() {
   updateData = null;
-  _updateFileMeta = { name: '', custCol: -1, prodCol: -1, phoneCol: -1, headerIdx: 0, rowCount: 0 };
+  _updateFileMeta = { name: '', custCol: -1, prodCol: -1, phoneCol: -1, contactCol: -1, headerIdx: 0, rowCount: 0 };
   document.getElementById('fileUpdateOk').classList.remove('show');
   document.getElementById('cardFileUpdate').classList.remove('loaded');
   document.getElementById('updateFileName').textContent = '';
@@ -4336,10 +4378,15 @@ function processUpdateFile(file) {
       const hdrRow = (rows[headerIdx] || []).map(c => normalize(String(c)));
       
       // Detect columns
-      let custCol = hdrRow.findIndex(c => toLower(c).includes('khách'));
+      let custCol = findCustomerNameCol(hdrRow);
       let prodCol = hdrRow.findIndex(c => toLower(c).includes('sản phẩm') && !toLower(c).includes('mã'));
       if (prodCol < 0) prodCol = hdrRow.findIndex(c => toLower(c).includes('sản phẩm') || toLower(c).includes('product'));
       let phoneCol = hdrRow.findIndex(c => /điện thoại|phone|sđt|sdt/i.test(c));
+      let contactCol = hdrRow.findIndex(c => {
+        const cl = toLower(c);
+        return cl.includes('người liên hệ') || cl.includes('liên hệ') || cl.includes('người nhận') ||
+               cl.includes('liên lạc') || cl.includes('contact') || cl.includes('đại diện');
+      });
       
       // Fallbacks based on common Vietnamese sales export format
       if (custCol < 0) custCol = 3;
@@ -4367,6 +4414,7 @@ function processUpdateFile(file) {
         custCol,
         prodCol,
         phoneCol,
+        contactCol,
         headerIdx,
         rowCount: rows.length - headerIdx - 1
       };
@@ -4378,9 +4426,10 @@ function processUpdateFile(file) {
       document.getElementById('cardFileUpdate').classList.add('loaded');
       
       const phoneInfo = phoneCol >= 0 ? ` · Cột ${phoneCol+1}=SĐT` : ' · không có cột SĐT';
+      const contactInfo = contactCol >= 0 ? ` · Cột ${contactCol+1}=Người liên hệ` : '';
       document.getElementById('updateStatsNote').classList.add('show');
       document.getElementById('updateStatsText').innerHTML = 
-        `📊 <strong>${custSet.size}</strong> KH · <strong>${prodSet.size}</strong> SP · Cột ${custCol+1}=KH · Cột ${prodCol+1}=SP${phoneInfo}<br>` +
+        `📊 <strong>${custSet.size}</strong> KH · <strong>${prodSet.size}</strong> SP · Cột ${custCol+1}=KH · Cột ${prodCol+1}=SP${phoneInfo}${contactInfo}<br>` +
         `${analysisResult.length > 0 ? '✨ Bấm <strong>CẬP NHẬT Dữ Liệu</strong> để bổ sung vào kết quả Phân Tích 1' : '⚠️ Hãy chạy <strong>Phân Tích Lần 1</strong> trước, rồi mới cập nhật'}`;
       
       // Show update button
@@ -4388,7 +4437,7 @@ function processUpdateFile(file) {
       document.getElementById('btnUpdateData').disabled = !(analysisResult.length > 0);
       
       addLog('success', `📁 File CẬP NHẬT: ${file.name} | ${rows.length - headerIdx - 1} dòng | ${custSet.size} KH | ${prodSet.size} SP`);
-      addLog('info', `   Cột KH = ${custCol+1} ("${hdrRow[custCol]}") | Cột SP = ${prodCol+1} ("${hdrRow[prodCol]}")${phoneCol >= 0 ? ` | Cột SĐT = ${phoneCol+1}` : ''}`);
+      addLog('info', `   Cột KH = ${custCol+1} ("${hdrRow[custCol]}") | Cột SP = ${prodCol+1} ("${hdrRow[prodCol]}")${phoneCol >= 0 ? ` | Cột SĐT = ${phoneCol+1}` : ''}${contactCol >= 0 ? ` | Cột Người liên hệ = ${contactCol+1}` : ''}`);
       
       if (analysisResult.length > 0) {
         showToast(`✅ Đã đọc file: ${custSet.size} KH, ${prodSet.size} SP. Bấm CẬP NHẬT để bổ sung.`, 'success');
@@ -4414,11 +4463,11 @@ function runUpdateData() {
   
   setTimeout(() => {
     try {
-      const { custCol, prodCol, phoneCol, headerIdx } = _updateFileMeta;
+      const { custCol, prodCol, phoneCol, contactCol, headerIdx } = _updateFileMeta;
       const threshold = parseInt(document.getElementById('thresholdSlider').value, 10);
       
       // Group rows from update file by customer
-      // Map: normalizedKey -> { displayName, products: Set, phone: '' }
+      // Map: normalizedKey -> { displayName, products: Set, phone: '', contactPerson: '' }
       const updateMap = new Map();
       for (let i = headerIdx + 1; i < updateData.length; i++) {
         const r = updateData[i]; if (!r || !r.length) continue;
@@ -4433,13 +4482,17 @@ function runUpdateData() {
         
         let entry = updateMap.get(normKey);
         if (!entry) {
-          entry = { display: rawCust, products: new Set(), phone: '' };
+          entry = { display: rawCust, products: new Set(), phone: '', contactPerson: '' };
           updateMap.set(normKey, entry);
         }
         entry.products.add(prodName);
         if (phoneCol >= 0 && !entry.phone) {
           const phoneVal = normalize(String(r[phoneCol] || ''));
           if (phoneVal && /\d/.test(phoneVal)) entry.phone = phoneVal;
+        }
+        if (contactCol >= 0 && !entry.contactPerson) {
+          const contactVal = normalize(String(r[contactCol] || ''));
+          if (contactVal) entry.contactPerson = contactVal;
         }
       }
       
@@ -4449,6 +4502,7 @@ function runUpdateData() {
       let newCustomersAdded = 0;       // brand new customers
       let newCustomerProducts = 0;    // total products from new customers
       let phonesUpdated = 0;          // phones added/updated for existing customers
+      let contactsUpdated = 0;        // contact persons added/updated for existing customers
       const exampleAdds = [];          // first few examples for log
       
       for (const [normKey, entry] of updateMap) {
@@ -4474,12 +4528,18 @@ function runUpdateData() {
             customer.phone = entry.phone;
             phonesUpdated++;
           }
+          // Update contact person if customer didn't have one
+          if (entry.contactPerson && !customer.contactPerson) {
+            customer.contactPerson = entry.contactPerson;
+            contactsUpdated++;
+          }
         } else {
           // === NEW CUSTOMER → add to analysisResult ===
           const newCust = {
             key: generateKey(entry.display),
             name: entry.display,
             phone: entry.phone || '',
+            contactPerson: entry.contactPerson || '',
             products: [...entry.products].sort((a, b) => a.localeCompare(b, 'vi'))
           };
           analysisResult.push(newCust);
@@ -4498,7 +4558,7 @@ function runUpdateData() {
       
       hideLoading();
       
-      const summary = `✅ Cập nhật xong: ${existingMatched} KH cũ khớp · ${newProductsAdded} SP mới thêm · ${newCustomersAdded} KH mới · ${phonesUpdated} SĐT bổ sung`;
+      const summary = `✅ Cập nhật xong: ${existingMatched} KH cũ khớp · ${newProductsAdded} SP mới thêm · ${newCustomersAdded} KH mới · ${phonesUpdated} SĐT bổ sung · ${contactsUpdated} người liên hệ bổ sung`;
       showToast(summary, 'success');
       addLog('success', summary);
       
@@ -4648,7 +4708,7 @@ function runAnalysis2() {
       }
       
       const headerRow = compareData[headerIndex].map(c => normalize(String(c)));
-      let customerCol = headerRow.findIndex(c => toLower(c).includes('khách'));
+      let customerCol = findCustomerNameCol(headerRow);
       // Prefer "Sản phẩm" (without "Mã") over "Mã sản phẩm"
       let productCol  = headerRow.findIndex(c => toLower(c).includes('sản phẩm') && !toLower(c).includes('mã'));
       if (productCol < 0) productCol = headerRow.findIndex(c => toLower(c).includes('sản phẩm') || toLower(c).includes('product'));
